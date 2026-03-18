@@ -1,0 +1,67 @@
+{
+  "name": "n8n-local-desktop",
+  "version": "0.1.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "clean": "rimraf dist",
+    "build": "pnpm clean && electron-builder",
+    "build:linux": "pnpm clean && electron-builder --linux",
+    "build:mac": "pnpm clean && electron-builder --mac",
+    "build:win": "pnpm clean && electron-builder --win"
+  },
+  "homepage": "https://github.com/kkomelin/n8n-local-desktop",
+  "bugs": {
+    "url": "https://github.com/kkomelin/n8n-local-desktop/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kkomelin/n8n-local-desktop.git"
+  },
+  "keywords": ["n8n", "ollama", "electron", "desktop", "docker", "ai", "automation"],
+  "author": "Konstantin Komelin <konstantin.komelin@gmail.com>",
+  "license": "Apache-2.0",
+  "description": "n8n Local Desktop",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron"
+    ]
+  },
+  "build": {
+    "appId": "com.kkomelin.n8n-local-desktop",
+    "productName": "n8n Local Desktop",
+    "copyright": "Licensed under Apache-2.0.",
+    "files": [
+      "main.js",
+      "preload.js",
+      "loader.html",
+      "LICENSE"
+    ],
+    "extraResources": [
+      {
+        "from": "compose.yaml",
+        "to": "compose.yaml"
+      },
+      {
+        "from": "ollama-credentials.json",
+        "to": "ollama-credentials.json"
+      }
+    ],
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Development"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": ["nsis"]
+    }
+  },
+  "devDependencies": {
+    "electron": "^40.2.1",
+    "electron-builder": "^26.7.0",
+    "rimraf": "^6.0.1"
+  }
+}

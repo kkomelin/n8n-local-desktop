@@ -1,0 +1,44 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_RUNNERS_ENABLED=true
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-UTC}
+      - TZ=${GENERIC_TIMEZONE:-UTC}
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+      - ./n8n-files:/files
+      - ./n8n-custom:/home/node/.n8n/custom
+    networks:
+      - n8n-network
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    # ports:
+    #   - "11434:11434"
+    volumes:
+      - ./ollama-data:/root/.ollama
+    networks:
+      - n8n-network
+    # Uncomment the following lines if you have an NVIDIA GPU:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+networks:
+  n8n-network:
+    driver: bridge
