@@ -9,6 +9,8 @@ Desktop Electron wrapper that runs [n8n](https://n8n.io/) + [Ollama](https://oll
 
 > Docker is required — see [official installation docs](https://docs.docker.com/engine/install/) for platform-specific instructions.
 
+---
+
 ## Development
 
 ### How it works
@@ -19,7 +21,7 @@ Closing the window runs `docker compose down` and stops both services.
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20+)
+- [Node.js](https://nodejs.org/) (v24+)
 - [pnpm](https://pnpm.io/)
 - [Docker](https://docs.docker.com/engine/install/)
 
@@ -39,6 +41,8 @@ The app will:
 
 1. Pull `docker.n8n.io/n8nio/n8n` and `ollama/ollama`
 2. Start both services via Docker Compose
+3. [first launch] Create an Ollama credential pre-configured to connect to `http://ollama:11434`
+4. [first launch] Download the `gemma3:4b` model for LLM workflows (~3-4 GB download)
 3. Open n8n in an Electron window once ready
 
 Data is persisted in the app's user data directory:
@@ -49,15 +53,6 @@ Data is persisted in the app's user data directory:
 | `n8n-files` | Additional files for n8n |
 | `n8n-custom` | Custom n8n nodes (auto-loaded on startup) |
 | `ollama-data` | Ollama models and config |
-
-### First-run setup
-
-On the first launch, the app automatically:
-
-1. Creates an Ollama credential pre-configured to connect to `http://ollama:11434`
-2. Downloads the `gemma3:4b` model for LLM workflows (~3-4 GB download)
-
-The credential and model persist across launches — no manual setup required.
 
 ### Installing additional Ollama models
 
