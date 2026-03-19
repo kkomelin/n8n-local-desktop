@@ -41,7 +41,7 @@ function createLoaderWindow() {
     },
   })
 
-  loaderWindow.loadFile('loader.html')
+  loaderWindow.loadFile('loader.html', { query: { version: app.getVersion() } })
   loaderWindow.once('ready-to-show', () => {
     loaderWindow.show()
     startServices()
