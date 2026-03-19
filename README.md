@@ -17,7 +17,7 @@ Desktop Electron app that runs [n8n](https://n8n.io/) + [Ollama](https://ollama.
 
 On first launch, the `gemma3:4b` model (~3-4 GB) is automatically downloaded and configured for use in n8n LLM workflows.
 
-To install additional Ollama models, run:
+To install additional Ollama models, launch the app first, then run:
 
 ```bash
 docker exec -it n8n-local-desktop-ollama-1 ollama pull <model-name>
