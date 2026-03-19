@@ -57,41 +57,24 @@
     height: 100%; padding: 32px;
   }
 
+  /* ── App icon ── */
+  .app-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    animation: fadeIn .8s ease-out both;
+    filter: drop-shadow(0 4px 16px rgba(255,109,90,.2));
+  }
+
   /* ── Brand ── */
   .brand {
     margin-bottom: 40px;
     animation: fadeIn .8s ease-out both;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .brand-logo {
-    font-size: 32px;
-    font-weight: 500;
-    letter-spacing: -.02em;
-    color: var(--accent);
-    filter: drop-shadow(0 0 16px rgba(255,109,90,.4));
-    animation: accentPulse 3s ease-in-out infinite;
-  }
-
-  .brand-separator {
-    color: var(--border-light);
-    font-size: 20px;
+    font-size: 15px;
     font-weight: 300;
-  }
-
-  .brand-suffix {
-    font-size: 14px;
-    font-weight: 300;
-    color: var(--text-dim);
-    letter-spacing: .08em;
+    color: var(--text-secondary);
+    letter-spacing: .06em;
     text-transform: lowercase;
-  }
-
-  @keyframes accentPulse {
-    0%, 100% { filter: drop-shadow(0 0 10px rgba(255,109,90,.3)); }
-    50%       { filter: drop-shadow(0 0 24px rgba(255,109,90,.6)); }
   }
 
   /* ── Card ── */
@@ -220,11 +203,8 @@
   <div class="bg"></div>
   <div class="wrapper">
 
-    <div class="brand">
-      <span class="brand-logo">n8n</span>
-      <span class="brand-separator">&gt;</span>
-      <span class="brand-suffix">Local, Desktop</span>
-    </div>
+    <img class="app-icon" src="assets/icon.png" alt="">
+    <div class="brand">n8n local desktop</div>
 
     <div class="card">
       <div class="progress-area">

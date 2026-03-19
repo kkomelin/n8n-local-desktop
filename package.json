@@ -35,7 +35,10 @@
       "main.js",
       "preload.js",
       "loader.html",
-      "LICENSE"
+      "LICENSE",
+      "assets/icon.png",
+      "assets/linux/icons/512x512.png",
+      "assets/windows/icon.ico"
     ],
     "extraResources": [
       {
@@ -49,14 +52,17 @@
     ],
     "linux": {
       "target": ["AppImage", "deb"],
-      "category": "Development"
+      "category": "Development",
+      "icon": "assets/linux/icons"
     },
     "mac": {
       "target": ["dmg"],
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/macos/icon.icns"
     },
     "win": {
-      "target": ["nsis"]
+      "target": ["nsis"],
+      "icon": "assets/windows/icon.ico"
     }
   },
   "devDependencies": {

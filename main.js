@@ -5,6 +5,13 @@ const http = require("http");
 const fs = require("fs");
 
 const PROJECT_NAME = "n8n-local-desktop";
+
+const iconPath =
+  process.platform === "win32"
+    ? path.join(__dirname, "assets/windows/icon.ico")
+    : process.platform === "linux"
+    ? path.join(__dirname, "assets/linux/icons/512x512.png")
+    : undefined; // macOS: handled by the app bundle
 const PORT = 5678;
 const POLL_INTERVAL = 2000;
 const POLL_TIMEOUT = 180_000;
@@ -26,6 +33,7 @@ function createLoaderWindow() {
     transparent: false,
     backgroundColor: "#0d0d0d",
     show: false,
+    ...(iconPath && { icon: iconPath }),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -87,7 +95,7 @@ function composeArgs(subcommand, extra = []) {
 
 function pullImages() {
   return new Promise((resolve) => {
-    sendStatus("Pulling Docker images…");
+    sendStatus("Pulling latest Docker images…");
 
     const proc = spawn("docker", composeArgs("pull"));
 
@@ -185,6 +193,7 @@ function openApp() {
     minWidth: 800,
     minHeight: 600,
     show: false,
+    ...(iconPath && { icon: iconPath }),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
