@@ -4,6 +4,7 @@
   "main": "main.js",
   "scripts": {
     "check": "node --check main.js preload.js",
+    "format": "biome format --write .",
     "start": "electron .",
     "clean": "rimraf dist",
     "build": "pnpm clean && electron-builder",
@@ -19,7 +20,15 @@
     "type": "git",
     "url": "https://github.com/kkomelin/n8n-local-desktop.git"
   },
-  "keywords": ["n8n", "ollama", "electron", "desktop", "docker", "ai", "automation"],
+  "keywords": [
+    "n8n",
+    "ollama",
+    "electron",
+    "desktop",
+    "docker",
+    "ai",
+    "automation"
+  ],
   "author": "Konstantin Komelin <konstantin.komelin@gmail.com>",
   "license": "Apache-2.0",
   "description": "n8n Local Desktop",
@@ -53,21 +62,29 @@
       }
     ],
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Development",
       "icon": "assets/linux/icons"
     },
     "mac": {
-      "target": ["dmg"],
+      "target": [
+        "dmg"
+      ],
       "category": "public.app-category.developer-tools",
       "icon": "assets/macos/icon.icns"
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "assets/windows/icon.ico"
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.8",
     "electron": "^40.2.1",
     "electron-builder": "^26.7.0",
     "rimraf": "^6.0.1"
