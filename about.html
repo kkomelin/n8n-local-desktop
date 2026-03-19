@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<title>About n8n Local Desktop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-deep:       #0d0d0d;
+    --bg-card:       #1a1a1a;
+    --border:        #2a2a2a;
+    --text-primary:  #f5f5f5;
+    --text-secondary:#a3a3a3;
+    --text-dim:      #666;
+    --accent:        #FF6D5A;
+    --accent-dim:    rgba(255,109,90,.15);
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-deep);
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-primary);
+    user-select: none;
+  }
+
+  .bg {
+    position: fixed; inset: 0;
+    background: var(--bg-deep);
+    z-index: 0;
+  }
+  .bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255,109,90,.06) 0%, transparent 70%);
+  }
+
+  .wrapper {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 100%; padding: 32px 24px;
+    gap: 0;
+  }
+
+  .app-icon {
+    width: 72px; height: 72px;
+    border-radius: 18px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 20px rgba(255,109,90,.25));
+    animation: fadeIn .6s ease-out both;
+  }
+
+  .app-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: .04em;
+    margin-bottom: 6px;
+    animation: fadeIn .6s .05s ease-out both;
+  }
+
+  .version-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(255,109,90,.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+    letter-spacing: .06em;
+    margin-bottom: 28px;
+    animation: fadeIn .6s .1s ease-out both;
+  }
+
+  .divider {
+    width: 100%;
+    max-width: 260px;
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+    animation: fadeIn .6s .15s ease-out both;
+  }
+
+  .info-list {
+    width: 100%;
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 28px;
+    animation: fadeIn .6s .2s ease-out both;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: .04em;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+  }
+
+  .info-value a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+    transition: color .15s, border-color .15s;
+    cursor: pointer;
+  }
+
+  .info-value a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .close-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 7px 24px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    letter-spacing: .04em;
+    text-transform: lowercase;
+    transition: all .15s;
+    animation: fadeIn .6s .25s ease-out both;
+  }
+
+  .close-btn:hover {
+    background: rgba(255,255,255,.05);
+    border-color: var(--text-dim);
+    color: var(--text-primary);
+  }
+
+  .close-btn:active { transform: scale(.97); }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="wrapper">
+
+    <img class="app-icon" src="assets/icon.png" alt="">
+    <div class="app-name">n8n Local Desktop</div>
+    <div class="version-badge" id="version">v—</div>
+
+    <div class="divider"></div>
+
+    <div class="info-list">
+      <div class="info-row">
+        <span class="info-label">license</span>
+        <span class="info-value">Apache-2.0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">source</span>
+        <span class="info-value"><a id="homepage-link" href="#">github.com</a></span>
+      </div>
+    </div>
+
+    <button class="close-btn" id="close-btn">close</button>
+
+  </div>
+
+<script>
+  const params = new URLSearchParams(location.search);
+
+  const version = params.get('version');
+  if (version) document.getElementById('version').textContent = 'v' + version;
+
+  const homepage = params.get('homepage');
+  if (homepage) {
+    const link = document.getElementById('homepage-link');
+    link.href = homepage;
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.electronAPI?.openExternal(homepage);
+    });
+  }
+
+  document.getElementById('close-btn').addEventListener('click', () => window.close());
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@
   "version": "0.3.0",
   "main": "main.js",
   "scripts": {
+    "check": "node --check main.js preload.js",
     "start": "electron .",
     "clean": "rimraf dist",
     "build": "pnpm clean && electron-builder",
@@ -35,6 +36,7 @@
       "main.js",
       "preload.js",
       "loader.html",
+      "about.html",
       "LICENSE",
       "assets/icon.png",
       "assets/linux/icons/512x512.png",

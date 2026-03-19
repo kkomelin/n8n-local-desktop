@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('error', handler);
     return () => ipcRenderer.removeListener('error', handler);
   },
-  retry: () => ipcRenderer.send('retry'),
-  quit:  () => ipcRenderer.send('quit-app'),
+  retry:        () => ipcRenderer.send('retry'),
+  quit:         () => ipcRenderer.send('quit-app'),
+  openExternal: (url) => ipcRenderer.send('open-external', url),
 });

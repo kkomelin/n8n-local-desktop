@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, shell } = require("electron");
 const { spawn, execSync } = require("child_process");
 const path = require("path");
 const http = require("http");
@@ -365,6 +365,51 @@ async function startServices() {
   }
 }
 
+// ── About window ──
+
+function createAboutWindow() {
+  const win = new BrowserWindow({
+    width: 360,
+    height: 460,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    title: "About n8n Local Desktop",
+    ...(iconPath && { icon: iconPath }),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  win.setMenu(null);
+  win.loadFile("about.html", {
+    query: {
+      version: app.getVersion(),
+      homepage: "https://github.com/kkomelin/n8n-local-desktop",
+    },
+  });
+}
+
+function buildMenu() {
+  const template = [
+    ...(process.platform === "darwin" ? [{ role: "appMenu" }] : []),
+    { role: "fileMenu" },
+    { role: "editMenu" },
+    { role: "viewMenu" },
+    { role: "windowMenu" },
+    {
+      role: "help",
+      submenu: [
+        { label: "About", click: createAboutWindow },
+      ],
+    },
+  ];
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 // ── App lifecycle ──
 
 app.whenReady().then(() => {
@@ -374,6 +419,7 @@ app.whenReady().then(() => {
 
   dataDir = app.getPath("userData");
 
+  buildMenu();
   createLoaderWindow();
 });
 
@@ -392,4 +438,8 @@ ipcMain.on("retry", () => {
 ipcMain.on("quit-app", () => {
   stopServices();
   app.quit();
+});
+
+ipcMain.on("open-external", (_event, url) => {
+  shell.openExternal(url);
 });

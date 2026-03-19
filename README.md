@@ -39,8 +39,8 @@ See [docs/host-llm-servers.md](docs/host-llm-servers.md) for setup instructions.
 ## Roadmap
 
 - [x] Make it possible to connect with the host machine's LLM servers from n8n workflows, e.g. LM Studio, llama.cpp, Ollama, etc.
+- [x] Add an About page with app version info
 - [ ] Integrate n8n routes into the app menu
-- [ ] Add an About page with app version info
 - [ ] Make it possible to install new models via the app (currently only available via CLI)
 
 ---
