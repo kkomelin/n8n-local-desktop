@@ -1,0 +1,10 @@
+pre-commit:
+  jobs:
+    - name: format
+      glob: "*.{js,css,html}"
+      run: pnpm format -- {staged_files}
+      stage_fixed: true
+
+    - name: check
+      glob: "*.js"
+      run: pnpm check -- {staged_files}

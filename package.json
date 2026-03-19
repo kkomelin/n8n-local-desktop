@@ -34,7 +34,8 @@
   "description": "n8n Local Desktop",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "electron"
+      "electron",
+      "lefthook"
     ]
   },
   "build": {
@@ -88,6 +89,7 @@
     "@biomejs/biome": "^2.4.8",
     "electron": "^40.2.1",
     "electron-builder": "^26.7.0",
+    "lefthook": "^2.1.4",
     "rimraf": "^6.0.1"
   }
 }
