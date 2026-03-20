@@ -17,7 +17,7 @@ Desktop Electron app that runs [n8n](https://n8n.io/) + [Ollama](https://ollama.
 
 - **No cloud, no subscriptions** - run n8n and local AI models entirely on your machine, free of charge
 - **Privacy by default** - your workflows and data never leave your computer
-- **One-click setup** - no manual Docker commands, no config files to edit; just download and run
+- **One-click setup** - no manual Docker commands, no config files to edit; just [download](https://github.com/kkomelin/n8n-local-desktop/releases) and run
 - **Local LLMs included** - ships with Ollama pre-configured, so AI-powered workflows work out of the box
 - **Use your own models** - pull any model from Ollama's library or connect to LM Studio, llama.cpp, or a host Ollama instance
 - **Full community edition** - runs the official n8n Docker image with no integrations removed or disabled
