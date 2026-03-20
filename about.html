@@ -105,6 +105,10 @@
         <span class="info-value">Apache-2.0</span>
       </div>
       <div class="info-row">
+        <span class="info-label">author</span>
+        <span class="info-value"><a id="author-link" href="#">Konstantin Komelin</a></span>
+      </div>
+      <div class="info-row">
         <span class="info-label">source</span>
         <span class="info-value"><a id="homepage-link" href="#">github.com</a></span>
       </div>
@@ -117,6 +121,12 @@
 
   const version = params.get('version');
   if (version) document.getElementById('version').textContent = 'v' + version;
+
+  const authorLink = document.getElementById('author-link');
+  authorLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.electronAPI?.openExternal('https://komelin.com?utm_source=n8n-local-desktop');
+  });
 
   const homepage = params.get('homepage');
   if (homepage) {
