@@ -284,7 +284,10 @@
       </div>
 
       <div class="section">
-        <div class="section-label">Install a Model</div>
+        <div class="section-label">
+          Install a Model
+          <button id="btn-browse-models" style="float:right;font-size:10px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;">Browse models →</button>
+        </div>
         <div class="install-row">
           <input class="model-input" id="model-input" type="text"
             placeholder="e.g. llama3.2:3b" autocomplete="off" spellcheck="false">
@@ -341,8 +344,9 @@
   const progressEl  = $('progress-wrap')
   const fillEl      = $('progress-fill')
   const progressTxt = $('progress-text')
-  const btnCancel   = $('btn-cancel')
-  const chipsEl     = $('chips')
+  const btnCancel      = $('btn-cancel')
+  const chipsEl        = $('chips')
+  const btnBrowseModels = $('btn-browse-models')
 
   // ── State ──
   function applyState(state) {
@@ -537,6 +541,10 @@
 
   btnCancel.addEventListener('click', async () => {
     if (currentPullName) await window.electronAPI.ollamaCancelPull(currentPullName)
+  })
+
+  btnBrowseModels.addEventListener('click', () => {
+    window.electronAPI.openExternal('https://ollama.com/search')
   })
 
   init()

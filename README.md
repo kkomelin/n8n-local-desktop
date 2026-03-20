@@ -30,7 +30,7 @@ For example:
 docker exec -it n8n-local-desktop-ollama-1 ollama pull llama3.2:3b
 ```
 
-Browse available models at [ollama.com/library](https://ollama.com/library).
+Browse available models at [ollama.com/search](https://ollama.com/search).
 
 ## Connecting to Host LLM Servers
 

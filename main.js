@@ -3,7 +3,8 @@ const { spawn, execSync } = require('child_process')
 const path = require('path')
 const http = require('http')
 const fs = require('fs')
-const ollamaService = require('./ollama-service')
+const ollamaService = require('./lib/ollama-service')
+const { cleanProgressLine } = require('./lib/progress-cleaner')
 
 const PROJECT_NAME = 'n8n-local-desktop'
 
@@ -65,8 +66,8 @@ function sendLog(text) {
   if (isDev) console.log(text.trimEnd())
   const lines = text.split('\n')
   for (const line of lines) {
-    const trimmed = line.trimEnd()
-    if (trimmed) loaderWindow?.webContents.send('log-line', trimmed)
+    const cleaned = cleanProgressLine(line.trimEnd())
+    if (cleaned) loaderWindow?.webContents.send('log-line', cleaned)
   }
 }
 
