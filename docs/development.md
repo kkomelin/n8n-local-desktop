@@ -29,7 +29,7 @@ The app will:
 1. Pull `docker.n8n.io/n8nio/n8n` and `ollama/ollama`
 2. Start both services via Docker Compose
 3. [first launch] Create an Ollama credential pre-configured to connect to `http://ollama:11434`
-4. [first launch] Download the `gemma3:4b` model for LLM workflows (~3-4 GB download)
+4. [first launch] Download the `llama3.2:3b` model for LLM workflows (~2 GB download)
 3. Open n8n in an Electron window once ready
 
 Data is persisted in the app's user data directory:

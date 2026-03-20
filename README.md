@@ -15,9 +15,11 @@ Desktop Electron app that runs [n8n](https://n8n.io/) + [Ollama](https://ollama.
 
 ## AI Models
 
-On first launch, the `gemma3:4b` model (~3-4 GB) is automatically downloaded and configured for use in n8n LLM workflows.
+On first launch, the `llama3.2:3b` model (~2 GB) is automatically downloaded and configured for use in n8n LLM workflows.
 
-To install additional Ollama models, **launch the app first**, then run:
+To install additional Ollama models, use **Tools > Models** menu.
+
+Alternatively, **launch the app first**, then run:
 
 ```bash
 docker exec -it n8n-local-desktop-ollama-1 ollama pull <model-name>
@@ -40,8 +42,8 @@ See [docs/host-llm-servers.md](docs/host-llm-servers.md) for setup instructions.
 
 - [x] Make it possible to connect with the host machine's LLM servers from n8n workflows, e.g. LM Studio, llama.cpp, Ollama, etc.
 - [x] Add an About page with app version info
+- [x] Make it possible to install new models via the app menu (Tools > Models)
 - [ ] Integrate n8n routes into the app menu
-- [ ] Make it possible to install new models via the app (currently only available via CLI)
 
 ---
 

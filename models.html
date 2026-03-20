@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<title>Models</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  html, body { overflow-y: auto; }
+
+  .wrapper {
+    align-items: stretch;
+    justify-content: flex-start;
+    height: auto;
+    min-height: 100%;
+    padding: 24px;
+    gap: 0;
+  }
+
+  /* ── Banner ── */
+  .banner {
+    display: none;
+    background: rgba(239, 68, 68, .1);
+    border: 1px solid rgba(239, 68, 68, .3);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: var(--red-alert);
+    letter-spacing: .03em;
+    margin-bottom: 24px;
+  }
+  .banner.visible { display: block; }
+
+  /* ── Loading ── */
+  .loading-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 12px 0;
+  }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 28px; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Model list ── */
+  .model-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .model-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .model-name { flex: 1; font-size: 12px; color: var(--text-primary); }
+
+  .model-size {
+    font-size: 11px;
+    color: var(--text-dim);
+    min-width: 56px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .btn-delete {
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: color .15s, background .15s;
+    flex-shrink: 0;
+  }
+  .btn-delete:hover { color: var(--red-alert); background: rgba(239, 68, 68, .1); }
+  .btn-delete:disabled { opacity: .3; cursor: default; }
+
+  /* ── Inline confirm ── */
+  .confirm-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    background: rgba(239, 68, 68, .07);
+    border: 1px solid rgba(239, 68, 68, .2);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .confirm-row span { flex: 1; }
+
+  .btn-confirm-yes {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 3px 10px;
+    background: rgba(239, 68, 68, .15);
+    border: 1px solid rgba(239, 68, 68, .3);
+    border-radius: 4px;
+    color: var(--red-alert);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-confirm-yes:hover { background: rgba(239, 68, 68, .25); }
+
+  .btn-confirm-no {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 3px 10px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-confirm-no:hover { background: rgba(255, 255, 255, .05); }
+
+  .empty-state {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 12px;
+    text-align: center;
+  }
+
+  /* ── Install row ── */
+  .install-row { display: flex; gap: 8px; }
+
+  .model-input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color .15s;
+  }
+  .model-input::placeholder { color: var(--text-dim); }
+  .model-input:focus { border-color: var(--accent); }
+  .model-input:disabled { opacity: .4; }
+
+  .btn-install {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 8px 16px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(255, 109, 90, .3);
+    border-radius: 6px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-install:hover:not(:disabled) { background: rgba(255, 109, 90, .25); }
+  .btn-install:disabled { opacity: .4; cursor: default; }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .progress-wrap.visible { display: flex; }
+
+  .progress-track {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .3s ease;
+  }
+
+  .progress-text {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: .02em;
+    min-height: 14px;
+  }
+
+  .btn-cancel {
+    font-family: inherit;
+    font-size: 11px;
+    padding: 5px 14px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all .15s;
+    align-self: flex-start;
+  }
+  .btn-cancel:hover { border-color: var(--text-dim); color: var(--text-primary); }
+
+  /* ── Curated chips ── */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .chip {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 7px 11px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s, background .15s;
+    font-family: inherit;
+  }
+  .chip:hover:not(:disabled):not(.installed) {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .chip:disabled { cursor: default; }
+  .chip.installed {
+    border-color: rgba(74, 222, 128, .3);
+    background: rgba(74, 222, 128, .05);
+    cursor: default;
+  }
+
+  .chip-name { font-size: 11px; color: var(--text-primary); }
+  .chip.installed .chip-name::after { content: ' ✓'; color: #4ade80; }
+  .chip-meta { font-size: 10px; color: var(--text-dim); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="wrapper">
+
+    <div class="banner" id="offline-banner">
+      Ollama is not running. Start the app first.
+    </div>
+
+    <div class="loading-state" id="loading-state">
+      <div class="spinner"></div>
+      <span>Checking Ollama…</span>
+    </div>
+
+    <div id="main-content" style="display:none">
+
+      <div class="section">
+        <div class="section-label">Installed Models</div>
+        <div class="model-list" id="model-list">
+          <div class="empty-state" id="empty-state">No models installed</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Install a Model</div>
+        <div class="install-row">
+          <input class="model-input" id="model-input" type="text"
+            placeholder="e.g. llama3.2:3b" autocomplete="off" spellcheck="false">
+          <button class="btn-install" id="btn-install" disabled>Install</button>
+        </div>
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-text" id="progress-text"></div>
+          <button class="btn-cancel" id="btn-cancel">Cancel</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Quick Install</div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+    </div>
+
+  </div>
+<script>
+  const CURATED_MODELS = [
+    { name: 'llama3.2:3b',      size: '~2.0 GB', desc: 'Meta, lightweight' },
+    { name: 'gemma3:4b',        size: '~3.3 GB', desc: 'Google, fast & capable' },
+    { name: 'gemma3n:e2b',      size: '~5.6 GB', desc: 'Google, efficient multimodal' },
+    { name: 'phi4-mini',        size: '~2.5 GB', desc: 'Microsoft, efficient' },
+    { name: 'mistral',          size: '~4.4 GB', desc: 'Mistral AI, balanced' },
+    { name: 'deepseek-r1:7b',   size: '~4.7 GB', desc: 'Strong reasoning' },
+    { name: 'qwen2.5:3b',       size: '~1.9 GB', desc: 'Alibaba, multilingual' },
+    { name: 'codellama:7b',     size: '~3.8 GB', desc: 'Meta, code-focused' },
+    { name: 'nomic-embed-text', size: '~274 MB',  desc: 'Embeddings for vector stores' },
+  ]
+
+  const MODEL_NAME_RE = /^[a-zA-Z0-9:.\-/]+$/
+
+  // Strip :latest so curated names like "mistral" match "mistral:latest" from ollama list
+  const normalizeName = (n) => n.endsWith(':latest') ? n.slice(0, -7) : n
+
+  let installedNames = new Set()
+  let isPulling = false
+  let currentPullName = null
+
+  // ── DOM refs ──
+  const $ = (id) => document.getElementById(id)
+  const loadingEl   = $('loading-state')
+  const mainEl      = $('main-content')
+  const bannerEl    = $('offline-banner')
+  const modelListEl = $('model-list')
+  const emptyEl     = $('empty-state')
+  const inputEl     = $('model-input')
+  const btnInstall  = $('btn-install')
+  const progressEl  = $('progress-wrap')
+  const fillEl      = $('progress-fill')
+  const progressTxt = $('progress-text')
+  const btnCancel   = $('btn-cancel')
+  const chipsEl     = $('chips')
+
+  // ── State ──
+  function applyState(state) {
+    // state: 'loading' | 'offline' | 'ready' | 'pulling'
+    loadingEl.style.display = state === 'loading' ? 'flex' : 'none'
+    mainEl.style.display    = state !== 'loading' ? 'block' : 'none'
+    bannerEl.classList.toggle('visible', state === 'offline')
+
+    const frozen = state === 'offline' || state === 'pulling'
+    inputEl.disabled    = frozen
+    btnInstall.disabled = frozen || !isValidName(inputEl.value)
+
+    document.querySelectorAll('.chip').forEach((c) => {
+      if (!c.classList.contains('installed')) c.disabled = frozen
+    })
+    document.querySelectorAll('.btn-delete').forEach((b) => {
+      b.disabled = state === 'pulling'
+    })
+  }
+
+  function isValidName(v) {
+    return MODEL_NAME_RE.test(v.trim()) && v.trim().length > 0
+  }
+
+  // ── Render ──
+  function renderModels(models) {
+    installedNames = new Set(models.map((m) => normalizeName(m.name)))
+
+    modelListEl.querySelectorAll('.model-row, .confirm-row').forEach((el) => el.remove())
+    emptyEl.style.display = models.length ? 'none' : ''
+
+    for (const m of models) {
+      const row = document.createElement('div')
+      row.className = 'model-row'
+      row.dataset.name = m.name
+
+      const nameSpan = document.createElement('span')
+      nameSpan.className = 'model-name'
+      nameSpan.textContent = m.name
+
+      const sizeSpan = document.createElement('span')
+      sizeSpan.className = 'model-size'
+      sizeSpan.textContent = m.size
+
+      const delBtn = document.createElement('button')
+      delBtn.className = 'btn-delete'
+      delBtn.title = 'Remove model'
+      delBtn.textContent = '✕'
+      delBtn.addEventListener('click', () => showConfirm(m.name))
+
+      row.append(nameSpan, sizeSpan, delBtn)
+      modelListEl.appendChild(row)
+    }
+
+    renderChips()
+  }
+
+  function renderChips() {
+    chipsEl.innerHTML = ''
+    for (const model of CURATED_MODELS) {
+      const installed = installedNames.has(model.name)
+      const chip = document.createElement('button')
+      chip.className = 'chip' + (installed ? ' installed' : '')
+      chip.disabled = installed || isPulling
+
+      const nameSpan = document.createElement('span')
+      nameSpan.className = 'chip-name'
+      nameSpan.textContent = model.name
+
+      const metaSpan = document.createElement('span')
+      metaSpan.className = 'chip-meta'
+      metaSpan.textContent = `${model.size} · ${model.desc}`
+
+      chip.append(nameSpan, metaSpan)
+
+      if (!installed) {
+        chip.addEventListener('click', () => {
+          inputEl.value = model.name
+          startPull(model.name)
+        })
+      }
+      chipsEl.appendChild(chip)
+    }
+  }
+
+  // ── Delete ──
+  function showConfirm(name) {
+    modelListEl.querySelectorAll('.confirm-row').forEach((el) => el.remove())
+
+    const row = modelListEl.querySelector(`[data-name="${CSS.escape(name)}"]`)
+    if (!row) return
+
+    const confirm = document.createElement('div')
+    confirm.className = 'confirm-row'
+
+    const msg = document.createElement('span')
+    msg.textContent = `delete ${name}?`
+
+    const yes = document.createElement('button')
+    yes.className = 'btn-confirm-yes'
+    yes.textContent = 'yes'
+    yes.addEventListener('click', () => doDelete(name))
+
+    const no = document.createElement('button')
+    no.className = 'btn-confirm-no'
+    no.textContent = 'no'
+    no.addEventListener('click', () => confirm.remove())
+
+    confirm.append(msg, yes, no)
+    row.after(confirm)
+  }
+
+  async function doDelete(name) {
+    const result = await window.electronAPI.ollamaDeleteModel(name)
+    if (result.error) { console.error('Delete failed:', result.error); return }
+    const data = await window.electronAPI.ollamaListModels()
+    if (data.models) renderModels(data.models)
+  }
+
+  // ── Pull ──
+  async function startPull(name) {
+    if (!isValidName(name) || isPulling) return
+
+    isPulling = true
+    currentPullName = name
+    progressEl.classList.add('visible')
+    fillEl.style.width = '0%'
+    progressTxt.textContent = 'Starting…'
+    applyState('pulling')
+
+    await window.electronAPI.ollamaPullModel(name)
+  }
+
+  function onProgress({ name, line }) {
+    if (name !== currentPullName) return
+
+    progressTxt.textContent = line
+
+    const m = line.match(/(\d+)%/)
+    if (m) fillEl.style.width = `${m[1]}%`
+  }
+
+  async function onPullDone({ name, success }) {
+    isPulling = false
+    currentPullName = null
+    progressEl.classList.remove('visible')
+    inputEl.value = ''
+
+    const data = await window.electronAPI.ollamaListModels()
+    if (data.models) renderModels(data.models)
+
+    applyState('ready')
+
+    if (!success) progressTxt.textContent = 'Install failed.'
+  }
+
+  // ── Init ──
+  async function init() {
+    applyState('loading')
+
+    const status = await window.electronAPI.ollamaStatus()
+    if (!status.running) { applyState('offline'); return }
+
+    const data = await window.electronAPI.ollamaListModels()
+    if (data.error) { applyState('offline'); return }
+
+    renderModels(data.models || [])
+    applyState('ready')
+  }
+
+  // ── Listeners ──
+  const cleanupProgress = window.electronAPI.onOllamaPullProgress(onProgress)
+  const cleanupDone = window.electronAPI.onOllamaPullDone(onPullDone)
+
+  window.addEventListener('unload', () => {
+    cleanupProgress()
+    cleanupDone()
+  })
+
+  inputEl.addEventListener('input', () => {
+    btnInstall.disabled = isPulling || !isValidName(inputEl.value)
+  })
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !btnInstall.disabled) startPull(inputEl.value.trim())
+  })
+
+  btnInstall.addEventListener('click', () => {
+    const name = inputEl.value.trim()
+    if (isValidName(name)) startPull(name)
+  })
+
+  btnCancel.addEventListener('click', async () => {
+    if (currentPullName) await window.electronAPI.ollamaCancelPull(currentPullName)
+  })
+
+  init()
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ const { spawn, execSync } = require('child_process')
 const path = require('path')
 const http = require('http')
 const fs = require('fs')
+const ollamaService = require('./ollama-service')
 
 const PROJECT_NAME = 'n8n-local-desktop'
 
@@ -18,9 +19,12 @@ const POLL_TIMEOUT = 180_000
 const ALLOWED_ORIGIN = `http://localhost:${PORT}`
 
 let loaderWindow = null
+let modelsWindow = null
 let composeProcess = null
 let composePath = null
 let dataDir = null
+
+const activePulls = new Map()
 
 // ── Loader window ──
 
@@ -403,7 +407,7 @@ async function startServices() {
     await waitForReady()
     await setupOllamaCredential()
     await waitForOllama()
-    await pullOllamaModel('gemma3:4b')
+    await pullOllamaModel('llama3.2:3b')
     openApp()
   } catch (err) {
     sendLog(`Error: ${err.message}`)
@@ -439,12 +443,55 @@ function createAboutWindow() {
   })
 }
 
+// ── Models window ──
+
+function createModelsWindow() {
+  if (modelsWindow && !modelsWindow.isDestroyed()) {
+    modelsWindow.focus()
+    return
+  }
+
+  modelsWindow = new BrowserWindow({
+    width: 680,
+    height: 580,
+    minWidth: 560,
+    minHeight: 480,
+    resizable: true,
+    title: 'Models',
+    ...(iconPath && { icon: iconPath }),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  })
+
+  modelsWindow.setMenu(null)
+  modelsWindow.loadFile('models.html')
+
+  modelsWindow.on('closed', () => {
+    for (const [, ac] of activePulls) ac.abort()
+    activePulls.clear()
+    modelsWindow = null
+  })
+}
+
 function buildMenu() {
   const template = [
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
     { role: 'fileMenu' },
     { role: 'editMenu' },
     { role: 'viewMenu' },
+    {
+      label: 'Tools',
+      submenu: [
+        {
+          label: 'Models',
+          accelerator: 'CmdOrCtrl+Shift+M',
+          click: createModelsWindow,
+        },
+      ],
+    },
     { role: 'windowMenu' },
     {
       role: 'help',
@@ -462,6 +509,8 @@ app.whenReady().then(() => {
     : path.join(__dirname, 'compose.yaml')
 
   dataDir = app.getPath('userData')
+
+  ollamaService.init({ composePath, dataDir })
 
   buildMenu()
   createLoaderWindow()
@@ -486,4 +535,52 @@ ipcMain.on('quit-app', () => {
 
 ipcMain.on('open-external', (_event, url) => {
   shell.openExternal(url)
+})
+
+// ── Ollama model management ──
+
+ipcMain.handle('ollama:status', async () => ollamaService.checkStatus())
+
+ipcMain.handle('ollama:list', async () => ollamaService.listModels())
+
+ipcMain.handle('ollama:pull', async (event, name) => {
+  if (!ollamaService.MODEL_NAME_RE.test(name))
+    return { error: 'Invalid model name' }
+
+  const ac = new AbortController()
+  activePulls.set(name, ac)
+
+  try {
+    await ollamaService.pullModel(
+      name,
+      (line) => event.sender.send('ollama:pull-progress', { name, line }),
+      ac.signal
+    )
+    event.sender.send('ollama:pull-done', { name, success: true })
+    return { success: true }
+  } catch (err) {
+    event.sender.send('ollama:pull-done', {
+      name,
+      success: false,
+      error: err.message,
+    })
+    return { success: false }
+  } finally {
+    activePulls.delete(name)
+  }
+})
+
+ipcMain.handle('ollama:cancel', async (_event, name) => {
+  const ac = activePulls.get(name)
+  if (ac) {
+    ac.abort()
+    activePulls.delete(name)
+  }
+  return { success: true }
+})
+
+ipcMain.handle('ollama:delete', async (_event, name) => {
+  if (!ollamaService.MODEL_NAME_RE.test(name))
+    return { error: 'Invalid model name' }
+  return ollamaService.deleteModel(name)
 })
