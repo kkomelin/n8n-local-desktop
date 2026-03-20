@@ -576,7 +576,6 @@ function buildMenu() {
       submenu: [
         {
           label: 'Models',
-          accelerator: 'CmdOrCtrl+Shift+M',
           click: createModelsWindow,
         },
       ],
