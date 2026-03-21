@@ -19,7 +19,7 @@ To restore n8n's default telemetry behaviour, remove or comment out those lines 
 | Platform | Path |
 |---|---|
 | macOS | `/Applications/n8n Ollama Desktop.app/Contents/Resources/compose.yaml` |
-| Linux (deb) | `/opt/n8n-ollama-desktop/resources/compose.yaml` |
+| Linux (deb) | `/opt/n8n Ollama Desktop/resources/compose.yaml` |
 | Linux (AppImage) | See note below |
 | Windows | `C:\Program Files\n8n Ollama Desktop\resources\compose.yaml` |
 
