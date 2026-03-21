@@ -1,6 +1,6 @@
 {
-  "name": "n8n-local-desktop",
-  "version": "0.5.3",
+  "name": "n8n-ollama-desktop",
+  "version": "0.6.0",
   "main": "main.js",
   "scripts": {
     "check": "node --check *.js",
@@ -12,13 +12,13 @@
     "build:mac": "pnpm clean && electron-builder --mac",
     "build:win": "pnpm clean && electron-builder --win"
   },
-  "homepage": "https://github.com/kkomelin/n8n-local-desktop",
+  "homepage": "https://github.com/kkomelin/n8n-ollama-desktop",
   "bugs": {
-    "url": "https://github.com/kkomelin/n8n-local-desktop/issues"
+    "url": "https://github.com/kkomelin/n8n-ollama-desktop/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kkomelin/n8n-local-desktop.git"
+    "url": "https://github.com/kkomelin/n8n-ollama-desktop.git"
   },
   "keywords": [
     "n8n",
@@ -31,7 +31,7 @@
   ],
   "author": "Konstantin Komelin <konstantin.komelin@gmail.com>",
   "license": "Apache-2.0",
-  "description": "n8n Local Desktop",
+  "description": "n8n Ollama Desktop",
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron",
@@ -39,8 +39,8 @@
     ]
   },
   "build": {
-    "appId": "com.kkomelin.n8n-local-desktop",
-    "productName": "n8n Local Desktop",
+    "appId": "com.kkomelin.n8n-ollama-desktop",
+    "productName": "n8n Ollama Desktop",
     "copyright": "Licensed under Apache-2.0.",
     "files": [
       "main.js",

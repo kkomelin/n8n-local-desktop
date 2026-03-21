@@ -13,7 +13,7 @@ const fs = require('fs')
 const ollamaService = require('./lib/ollama-service')
 const { cleanProgressLine } = require('./lib/progress-cleaner')
 
-const PROJECT_NAME = 'n8n-local-desktop'
+const PROJECT_NAME = 'n8n-ollama-desktop'
 
 const iconPath =
   process.platform === 'win32'
@@ -510,7 +510,7 @@ function createAboutWindow() {
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
-    title: 'About n8n Local Desktop',
+    title: 'About',
     ...(iconPath && { icon: iconPath }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -527,7 +527,7 @@ function createAboutWindow() {
   win.loadFile('about.html', {
     query: {
       version: app.getVersion(),
-      homepage: 'https://github.com/kkomelin/n8n-local-desktop',
+      homepage: 'https://github.com/kkomelin/n8n-ollama-desktop',
     },
   })
 }
