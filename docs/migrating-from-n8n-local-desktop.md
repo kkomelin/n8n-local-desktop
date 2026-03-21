@@ -54,8 +54,6 @@ The new data directory is:
 
 ### Step 2 — Copy data
 
-Copy the subdirectories from the old location to the new one. Replace `<OLD>` and `<NEW>` with the paths from the table above.
-
 **macOS:**
 ```bash
 OLD="$HOME/Library/Application Support/n8n Local Desktop"
@@ -63,7 +61,7 @@ NEW="$HOME/Library/Application Support/n8n Ollama Desktop"
 cp -r "$OLD/n8n-data"    "$NEW/n8n-data"
 cp -r "$OLD/n8n-files"   "$NEW/n8n-files"
 cp -r "$OLD/n8n-custom"  "$NEW/n8n-custom"
-cp -r "$OLD/ollama-data" "$NEW/ollama-data"
+sudo cp -r "$OLD/ollama-data" "$NEW/ollama-data"
 ```
 
 **Linux:**
@@ -73,18 +71,21 @@ NEW="$HOME/.config/n8n-ollama-desktop"
 cp -r "$OLD/n8n-data"    "$NEW/n8n-data"
 cp -r "$OLD/n8n-files"   "$NEW/n8n-files"
 cp -r "$OLD/n8n-custom"  "$NEW/n8n-custom"
-cp -r "$OLD/ollama-data" "$NEW/ollama-data"
+sudo cp -r "$OLD/ollama-data" "$NEW/ollama-data"
 ```
 
 **Windows (PowerShell):**
 ```powershell
-Copy-Item -Recurse "$env:APPDATA\n8n Local Desktop\n8n-data"   "$env:APPDATA\n8n Ollama Desktop\n8n-data"
-Copy-Item -Recurse "$env:APPDATA\n8n Local Desktop\n8n-files"  "$env:APPDATA\n8n Ollama Desktop\n8n-files"
-Copy-Item -Recurse "$env:APPDATA\n8n Local Desktop\n8n-custom" "$env:APPDATA\n8n Ollama Desktop\n8n-custom"
-Copy-Item -Recurse "$env:APPDATA\n8n Local Desktop\ollama-data" "$env:APPDATA\n8n Ollama Desktop\ollama-data"
+$OLD = "$env:APPDATA\n8n Local Desktop"
+$NEW = "$env:APPDATA\n8n Ollama Desktop"
+Copy-Item -Recurse "$OLD\n8n-data"    "$NEW\n8n-data"
+Copy-Item -Recurse "$OLD\n8n-files"   "$NEW\n8n-files"
+Copy-Item -Recurse "$OLD\n8n-custom"  "$NEW\n8n-custom"
+Copy-Item -Recurse "$OLD\ollama-data" "$NEW\ollama-data"
 ```
 
 > **Tip:** Copying `ollama-data` avoids re-downloading your models (~2 GB+ per model). Skip it if you're happy to re-download.
+> **Note:** `ollama-data` contains files created by Docker as root, so `sudo` is required on macOS and Linux.
 
 ### Step 3 — Launch the new app
 
