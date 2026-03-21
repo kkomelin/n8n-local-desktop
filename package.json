@@ -7,10 +7,10 @@
     "format": "biome format --write .",
     "start": "electron .",
     "clean": "rimraf dist",
-    "build": "pnpm clean && electron-builder",
-    "build:linux": "pnpm clean && electron-builder --linux",
-    "build:mac": "pnpm clean && electron-builder --mac",
-    "build:win": "pnpm clean && electron-builder --win"
+    "build": "pnpm clean && electron-builder --publish never",
+    "build:linux": "pnpm clean && electron-builder --linux --publish never",
+    "build:mac": "pnpm clean && electron-builder --mac --publish never",
+    "build:win": "pnpm clean && electron-builder --win --publish never"
   },
   "homepage": "https://github.com/kkomelin/n8n-ollama-desktop",
   "bugs": {
