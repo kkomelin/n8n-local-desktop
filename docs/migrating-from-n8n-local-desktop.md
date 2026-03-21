@@ -16,7 +16,7 @@ The app has been renamed. The new app uses a different user data directory and D
 ## Before you start
 
 1. **Open the old app** and make sure all Docker services are running.
-2. **Export your workflows** via n8n Settings → Import/Export as a backup.
+2. **Export your workflows** as a backup — open the Workflows list, select all, and use the Download option from the action menu.
 3. **Quit the old app** — this stops the Docker services cleanly.
 
 ## Locate your data directories
