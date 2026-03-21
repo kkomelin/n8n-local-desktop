@@ -15,9 +15,7 @@ The app has been renamed. The new app uses a different user data directory and D
 
 ## Before you start
 
-1. **Open the old app** and make sure all Docker services are running.
-2. **Export your workflows** as a backup — open the Workflows list, select all, and use the Download option from the action menu.
-3. **Quit the old app** — this stops the Docker services cleanly.
+Make sure the old app is installed and has been launched at least once.
 
 ## Locate your data directories
 
@@ -40,7 +38,13 @@ ollama-data/    ← downloaded Ollama models
 
 ## Migration steps
 
-### Step 1 — Find the new app's data directory
+### Step 1 — Export your workflows
+
+Open **n8n Local Desktop** and make sure it is fully started. In n8n, open the Workflows list, select all workflows, and use the Download option from the action menu to save them as a backup.
+
+Then quit the old app to stop the Docker services cleanly before copying data.
+
+### Step 2 — Find the new app's data directory
 
 Launch **n8n Ollama Desktop** once so it creates its data directory, then quit it immediately.
 
@@ -52,7 +56,7 @@ The new data directory is:
 | Linux | `~/.config/n8n-ollama-desktop/` |
 | Windows | `%APPDATA%\n8n Ollama Desktop\` |
 
-### Step 2 — Copy data
+### Step 3 — Copy data
 
 **macOS:**
 ```bash
@@ -87,11 +91,11 @@ Copy-Item -Recurse "$OLD\ollama-data" "$NEW\ollama-data"
 > **Tip:** Copying `ollama-data` avoids re-downloading your models (~2 GB+ per model). Skip it if you're happy to re-download.
 > **Note:** `ollama-data` contains files created by Docker as root, so `sudo` is required on macOS and Linux.
 
-### Step 3 — Launch the new app
+### Step 4 — Launch the new app
 
-Start **n8n Ollama Desktop**. Your workflows, credentials, and models should be present.
+Start **n8n Ollama Desktop**. Your workflows, credentials, and models should be present. If your workflows are missing, import them manually via the Workflows list using the files you exported in Step 1.
 
-### Step 4 — Uninstall the old app (optional)
+### Step 5 — Uninstall the old app (optional)
 
 Once you've confirmed everything works, you can uninstall **n8n Local Desktop** and remove its data directory.
 
