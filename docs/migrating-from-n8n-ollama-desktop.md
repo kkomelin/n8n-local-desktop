@@ -1,6 +1,6 @@
-# Migrating from n8n Local Desktop to LonelyNathan
+# Migrating from n8n Ollama Desktop to LonelyNathan
 
-This guide covers how to migrate your data from the old **n8n Local Desktop** app to the new **LonelyNathan** app.
+This guide covers how to migrate your data from the old **n8n Ollama Desktop** app to the new **LonelyNathan** app.
 
 ## What changes
 
@@ -8,10 +8,10 @@ The app has been renamed. The new app uses a different user data directory and D
 
 | | Old app | New app |
 |---|---|---|
-| App name | n8n Local Desktop | LonelyNathan |
-| GitHub repo | `kkomelin/n8n-local-desktop` | `kkomelin/n8n-ollama-desktop` |
-| Docker project | `n8n-local-desktop` | `lonelynathan` |
-| Container names | `n8n-local-desktop-n8n-1`, `n8n-local-desktop-ollama-1` | `lonelynathan-n8n-1`, `lonelynathan-ollama-1` |
+| App name | n8n Ollama Desktop | LonelyNathan |
+| GitHub repo | `kkomelin/n8n-ollama-desktop` | `kkomelin/n8n-ollama-desktop` |
+| Docker project | `n8n-ollama-desktop` | `lonelynathan` |
+| Container names | `n8n-ollama-desktop-n8n-1`, `n8n-ollama-desktop-ollama-1` | `lonelynathan-n8n-1`, `lonelynathan-ollama-1` |
 
 ## Before you start
 
@@ -23,9 +23,9 @@ The app stores data in Electron's user data path:
 
 | Platform | Path |
 |---|---|
-| macOS | `~/Library/Application Support/n8n Local Desktop/` |
-| Linux | `~/.config/n8n-local-desktop/` |
-| Windows | `%APPDATA%\n8n Local Desktop\` |
+| macOS | `~/Library/Application Support/n8n Ollama Desktop/` |
+| Linux | `~/.config/n8n-ollama-desktop/` |
+| Windows | `%APPDATA%\n8n Ollama Desktop\` |
 
 Inside that directory you'll find:
 
@@ -40,7 +40,7 @@ ollama-data/    ← downloaded Ollama models
 
 ### Step 1 — Export your workflows
 
-Open **n8n Local Desktop** and make sure it is fully started. In n8n, open the Workflows list, select all workflows, and use the Download option from the action menu to save them as a backup.
+Open **n8n Ollama Desktop** and make sure it is fully started. In n8n, open the Workflows list, select all workflows, and use the Download option from the action menu to save them as a backup.
 
 Then quit the old app to stop the Docker services cleanly before copying data.
 
@@ -60,7 +60,7 @@ The new data directory is:
 
 **macOS:**
 ```bash
-OLD="$HOME/Library/Application Support/n8n Local Desktop"
+OLD="$HOME/Library/Application Support/n8n Ollama Desktop"
 NEW="$HOME/Library/Application Support/LonelyNathan"
 cp -r "$OLD/n8n-data"    "$NEW/n8n-data"
 cp -r "$OLD/n8n-files"   "$NEW/n8n-files"
@@ -70,7 +70,7 @@ sudo cp -r "$OLD/ollama-data" "$NEW/ollama-data"
 
 **Linux:**
 ```bash
-OLD="$HOME/.config/n8n-local-desktop"
+OLD="$HOME/.config/n8n-ollama-desktop"
 NEW="$HOME/.config/lonelynathan"
 cp -r "$OLD/n8n-data"    "$NEW/n8n-data"
 cp -r "$OLD/n8n-files"   "$NEW/n8n-files"
@@ -80,7 +80,7 @@ sudo cp -r "$OLD/ollama-data" "$NEW/ollama-data"
 
 **Windows (PowerShell):**
 ```powershell
-$OLD = "$env:APPDATA\n8n Local Desktop"
+$OLD = "$env:APPDATA\n8n Ollama Desktop"
 $NEW = "$env:APPDATA\LonelyNathan"
 Copy-Item -Recurse "$OLD\n8n-data"    "$NEW\n8n-data"
 Copy-Item -Recurse "$OLD\n8n-files"   "$NEW\n8n-files"
@@ -97,23 +97,23 @@ Start **LonelyNathan**. Your workflows, credentials, and models should be presen
 
 ### Step 5 — Uninstall the old app (optional)
 
-Once you've confirmed everything works, you can uninstall **n8n Local Desktop** and remove its data directory.
+Once you've confirmed everything works, you can uninstall **n8n Ollama Desktop** and remove its data directory.
 
-**macOS:** Drag **n8n Local Desktop.app** to the Trash, then delete `~/Library/Application Support/n8n Local Desktop/`.
+**macOS:** Drag **n8n Ollama Desktop.app** to the Trash, then delete `~/Library/Application Support/n8n Ollama Desktop/`.
 
 **Linux (deb):**
 ```bash
-sudo apt remove n8n-local-desktop
-rm -rf ~/.config/n8n-local-desktop
+sudo apt remove n8n-ollama-desktop
+rm -rf ~/.config/n8n-ollama-desktop
 ```
 
-**Linux (AppImage):** Delete the `.AppImage` file and `~/.config/n8n-local-desktop/`.
+**Linux (AppImage):** Delete the `.AppImage` file and `~/.config/n8n-ollama-desktop/`.
 
-**Windows:** Uninstall via Settings → Apps, then delete `%APPDATA%\n8n Local Desktop\`.
+**Windows:** Uninstall via Settings → Apps, then delete `%APPDATA%\n8n Ollama Desktop\`.
 
 To also remove the old Docker volumes (they are separate from the app data directory):
 ```bash
-docker volume ls | grep n8n-local-desktop
+docker volume ls | grep n8n-ollama-desktop
 docker volume rm <volume-name>
 ```
 

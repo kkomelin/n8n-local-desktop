@@ -1,6 +1,6 @@
 # Telemetry
 
-By default, n8n Ollama Desktop disables all n8n diagnostics and version notifications to match its local-first, privacy-focused nature. The following environment variables are set in the bundled `compose.yaml`:
+By default, LonelyNathan disables all n8n diagnostics and version notifications to match its local-first, privacy-focused nature. The following environment variables are set in the bundled `compose.yaml`:
 
 ```yaml
 - N8N_DIAGNOSTICS_ENABLED=false
@@ -18,14 +18,14 @@ To restore n8n's default telemetry behaviour, remove or comment out those lines 
 
 | Platform | Path |
 |---|---|
-| macOS | `/Applications/n8n Ollama Desktop.app/Contents/Resources/compose.yaml` |
-| Linux (deb) | `/opt/n8n Ollama Desktop/resources/compose.yaml` |
+| macOS | `/Applications/LonelyNathan.app/Contents/Resources/compose.yaml` |
+| Linux (deb) | `/opt/LonelyNathan/resources/compose.yaml` |
 | Linux (AppImage) | See note below |
-| Windows | `C:\Program Files\n8n Ollama Desktop\resources\compose.yaml` |
+| Windows | `C:\Program Files\LonelyNathan\resources\compose.yaml` |
 
 > **Linux AppImage:** The AppImage is a read-only filesystem. Mount it first to extract the file, or switch to the `.deb` package for easier editing.
 > ```bash
-> ./n8n.Ollama.Desktop-*.AppImage --appimage-mount
+> ./LonelyNathan-*.AppImage --appimage-mount
 > ```
 > This mounts the image at a temporary path — copy `compose.yaml` from there to a writable location and re-package, or switch to the `.deb` instead.
 

@@ -6,14 +6,14 @@ const {
   shell,
   nativeTheme,
 } = require('electron')
-const { spawn, execSync } = require('child_process')
-const path = require('path')
-const http = require('http')
-const fs = require('fs')
+const { spawn, execSync } = require('node:child_process')
+const path = require('node:path')
+const http = require('node:http')
+const fs = require('node:fs')
 const ollamaService = require('./lib/ollama-service')
 const { cleanProgressLine } = require('./lib/progress-cleaner')
 
-const PROJECT_NAME = 'n8n-ollama-desktop'
+const PROJECT_NAME = 'lonelynathan'
 
 const iconPath =
   process.platform === 'win32'
@@ -527,7 +527,7 @@ function createAboutWindow() {
   win.loadFile('about.html', {
     query: {
       version: app.getVersion(),
-      homepage: 'https://github.com/kkomelin/n8n-ollama-desktop',
+      homepage: 'https://lonelynathan.app/',
     },
   })
 }

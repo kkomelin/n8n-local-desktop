@@ -1,9 +1,9 @@
 <p align="center">
-  <img width="150" height="150" alt="n8n Ollama Desktop" src="assets/icon.png" />
+  <img width="150" height="150" alt="LonelyNathan" src="assets/icon.png" />
 </p>
 
 <p align="center">
-Desktop Electron app that runs <a href="https://n8n.io/">n8n</a> + <a href="https://ollama.com/">Ollama</a> locally via Docker.
+LonelyNathan — Desktop app that runs <a href="https://n8n.io/">n8n</a> + <a href="https://ollama.com/">Ollama</a> locally via Docker.
 </p>
 
 <p align="center">

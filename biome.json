@@ -11,5 +11,21 @@
       "semicolons": "asNeeded",
       "trailingCommas": "es5"
     }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useButtonType": "off"
+      },
+      "correctness": {
+        "noUnusedFunctionParameters": "off"
+      },
+      "suspicious": {
+        "noControlCharactersInRegex": "off",
+        "useIterableCallbackReturn": "off"
+      }
+    }
   }
 }

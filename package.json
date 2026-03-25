@@ -1,10 +1,11 @@
 {
-  "name": "n8n-ollama-desktop",
+  "name": "lonelynathan",
   "version": "0.6.1",
   "main": "main.js",
   "scripts": {
     "check": "node --check *.js",
     "format": "biome format --write .",
+    "lint": "biome check --write .",
     "start": "electron .",
     "clean": "rimraf dist",
     "build": "pnpm clean && electron-builder --publish never",
@@ -12,7 +13,7 @@
     "build:mac": "pnpm clean && electron-builder --mac --publish never",
     "build:win": "pnpm clean && electron-builder --win --publish never"
   },
-  "homepage": "https://github.com/kkomelin/n8n-ollama-desktop",
+  "homepage": "https://lonelynathan.app",
   "bugs": {
     "url": "https://github.com/kkomelin/n8n-ollama-desktop/issues"
   },
@@ -27,11 +28,13 @@
     "desktop",
     "docker",
     "ai",
-    "automation"
+    "automation",
+    "n8n-ollama-desktop",
+    "lonelynathan"
   ],
   "author": "Konstantin Komelin <konstantin.komelin@gmail.com>",
   "license": "Apache-2.0",
-  "description": "n8n Ollama Desktop",
+  "description": "LonelyNathan — n8n + Ollama Desktop App",
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron",
@@ -39,8 +42,8 @@
     ]
   },
   "build": {
-    "appId": "com.kkomelin.n8n-ollama-desktop",
-    "productName": "n8n Ollama Desktop",
+    "appId": "app.lonelynathan.LonelyNathan",
+    "productName": "LonelyNathan",
     "copyright": "Licensed under Apache-2.0.",
     "files": [
       "main.js",
@@ -72,14 +75,14 @@
         "AppImage",
         "deb"
       ],
-      "category": "Development",
+      "category": "Office",
       "icon": "assets/linux/icons"
     },
     "mac": {
       "target": [
         "dmg"
       ],
-      "category": "public.app-category.developer-tools",
+      "category": "public.app-category.productivity",
       "icon": "assets/macos/icon.icns"
     },
     "win": {

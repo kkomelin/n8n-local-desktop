@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy"
       content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
-<title>n8n Ollama Desktop</title>
+<title>LonelyNathan</title>
 <link rel="stylesheet" href="shared.css">
 <script src="shared.js"></script>
 <style>
@@ -162,7 +162,7 @@
   <div class="wrapper">
 
     <img class="app-icon" src="assets/icon.png" alt="">
-    <div class="brand">n8n Ollama Desktop</div>
+    <div class="brand">LonelyNathan</div>
     <div class="version-badge" id="version">v—</div>
 
     <div class="card">
@@ -187,7 +187,7 @@
 
 <script>
   const version = new URLSearchParams(location.search).get('version');
-  if (version) document.getElementById('version').textContent = 'v' + version;
+  if (version) document.getElementById('version').textContent = `v${version}`;
 
   const statusEl  = document.getElementById('status-text');
   const logLineEl = document.getElementById('log-line');
