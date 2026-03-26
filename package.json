@@ -1,17 +1,18 @@
 {
   "name": "lonelynathan",
   "version": "0.7.0",
-  "main": "main.js",
+  "main": "out/main/index.js",
   "scripts": {
-    "check": "node --check *.js",
+    "check": "tsc --noEmit",
     "format": "biome format --write .",
     "lint": "biome check --write .",
-    "start": "electron .",
-    "clean": "rimraf dist",
-    "build": "pnpm clean && electron-builder --publish never",
-    "build:linux": "pnpm clean && electron-builder --linux --publish never",
-    "build:mac": "pnpm clean && electron-builder --mac --publish never",
-    "build:win": "pnpm clean && electron-builder --win --publish never"
+    "dev": "electron-vite dev",
+    "start": "pnpm dev",
+    "clean": "rimraf out dist",
+    "build": "pnpm clean && electron-vite build && electron-builder --publish never",
+    "build:linux": "pnpm clean && electron-vite build && electron-builder --linux --publish never",
+    "build:mac": "pnpm clean && electron-vite build && electron-builder --mac --publish never",
+    "build:win": "pnpm clean && electron-vite build && electron-builder --win --publish never"
   },
   "homepage": "https://lonelynathan.app",
   "bugs": {
@@ -38,6 +39,7 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron",
+      "esbuild",
       "lefthook"
     ]
   },
@@ -46,19 +48,8 @@
     "productName": "LonelyNathan",
     "copyright": "Licensed under Apache-2.0.",
     "files": [
-      "main.js",
-      "preload.js",
-      "lib/ollama-service.js",
-      "lib/progress-cleaner.js",
-      "shared.css",
-      "shared.js",
-      "loader.html",
-      "about.html",
-      "models.html",
-      "LICENSE",
-      "assets/icon.png",
-      "assets/linux/icons/512x512.png",
-      "assets/windows/icon.ico"
+      "out/**/*",
+      "LICENSE"
     ],
     "extraResources": [
       {
@@ -68,6 +59,14 @@
       {
         "from": "ollama-credentials.json",
         "to": "ollama-credentials.json"
+      },
+      {
+        "from": "assets/linux/icons/512x512.png",
+        "to": "assets/linux/icons/512x512.png"
+      },
+      {
+        "from": "assets/windows/icon.ico",
+        "to": "assets/windows/icon.ico"
       }
     ],
     "linux": {
@@ -94,9 +93,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.8",
+    "@types/node": "^25.5.0",
     "electron": "^40.2.1",
     "electron-builder": "^26.7.0",
+    "electron-vite": "^5.0.0",
     "lefthook": "^2.1.4",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "typescript": "^6.0.2"
   }
 }

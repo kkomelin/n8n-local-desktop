@@ -1,51 +1,83 @@
-const { spawn } = require('node:child_process')
-const { cleanProgressLine } = require('./progress-cleaner')
+import { spawn } from 'node:child_process'
+import { cleanProgressLine } from './progress-cleaner'
 
 const PROJECT_NAME = 'lonelynathan'
 
-const MODEL_NAME_RE = /^[a-zA-Z0-9:.\-/]+$/
+export const MODEL_NAME_RE = /^[a-zA-Z0-9:.\-/]+$/
 
-let _composePath = null
-let _dataDir = null
+interface InitOptions {
+  composePath: string
+  dataDir: string
+}
 
-function init({ composePath, dataDir }) {
+interface ExecResult {
+  code: number
+  stdout: string
+}
+
+export interface ModelInfo {
+  name: string
+  size: string
+  modified: string
+}
+
+export interface OllamaStatus {
+  running: boolean
+}
+
+export interface ListModelsResult {
+  models?: ModelInfo[]
+  error?: string
+}
+
+export interface DeleteModelResult {
+  success?: true
+  error?: string
+}
+
+let _composePath: string | null = null
+let _dataDir: string | null = null
+
+export function init({ composePath, dataDir }: InitOptions): void {
   _composePath = composePath
   _dataDir = dataDir
 }
 
-// ── Private exec helpers ──
-
-function _baseArgs() {
+function _baseArgs(): string[] {
   return [
     'compose',
     '--file',
-    _composePath,
+    _composePath!,
     '--project-name',
     PROJECT_NAME,
     '--project-directory',
-    _dataDir,
+    _dataDir!,
     'exec',
     '-T',
     'ollama',
   ]
 }
 
-function _execCapture(cmd) {
+function _execCapture(cmd: string[]): Promise<ExecResult> {
   return new Promise((resolve) => {
     const proc = spawn('docker', [..._baseArgs(), ...cmd])
 
     let stdout = ''
-    proc.stdout.on('data', (d) => {
+    proc.stdout.on('data', (d: Buffer) => {
       stdout += d.toString()
     })
     proc.stderr.on('data', () => {})
 
-    proc.on('close', (code) => resolve({ code, stdout }))
+    proc.on('close', (code) => resolve({ code: code ?? -1, stdout }))
     proc.on('error', () => resolve({ code: -1, stdout }))
   })
 }
 
-function _execStream(cmd, onChunk, signal) {
+function _execStream(
+  cmd: string[],
+  onChunk: (line: string) => void,
+  signal?: AbortSignal
+): Promise<number> {
   return new Promise((resolve) => {
     const proc = spawn('docker', [..._baseArgs(), ...cmd])
 
@@ -55,7 +87,7 @@ function _execStream(cmd, onChunk, signal) {
       })
     }
 
-    const feed = (d) => {
+    const feed = (d: Buffer) => {
       for (const line of d.toString().split(/[\n\r]+/)) {
         const clean = cleanProgressLine(line)
         if (clean) onChunk(clean)
@@ -65,14 +97,12 @@ function _execStream(cmd, onChunk, signal) {
     proc.stdout.on('data', feed)
     proc.stderr.on('data', feed)
 
-    proc.on('close', (code) => resolve(code))
+    proc.on('close', (code) => resolve(code ?? -1))
     proc.on('error', () => resolve(-1))
   })
 }
 
-// ── Public API ──
-
-async function checkStatus() {
+export async function checkStatus(): Promise<OllamaStatus> {
   try {
     const { code } = await _execCapture(['ollama', 'list'])
     return { running: code === 0 }
@@ -81,12 +111,11 @@ async function checkStatus() {
   }
 }
 
-async function listModels() {
+export async function listModels(): Promise<ListModelsResult> {
   try {
     const { code, stdout } = await _execCapture(['ollama', 'list'])
     if (code !== 0) return { error: 'Ollama is not running' }
 
-    // Output: NAME  ID  SIZE  MODIFIED (header + rows, columns separated by 2+ spaces)
     const lines = stdout.trim().split('\n').slice(1)
     const models = lines
       .filter((l) => l.trim())
@@ -102,29 +131,24 @@ async function listModels() {
 
     return { models }
   } catch (err) {
-    return { error: err.message }
+    return { error: (err as Error).message }
   }
 }
 
-function pullModel(name, onChunk, signal) {
+export function pullModel(
+  name: string,
+  onChunk: (line: string) => void,
+  signal?: AbortSignal
+): Promise<number> {
   return _execStream(['ollama', 'pull', name], onChunk, signal)
 }
 
-async function deleteModel(name) {
+export async function deleteModel(name: string): Promise<DeleteModelResult> {
   try {
     const { code } = await _execCapture(['ollama', 'rm', name])
     if (code !== 0) return { error: `Failed to delete model "${name}"` }
     return { success: true }
   } catch (err) {
-    return { error: err.message }
+    return { error: (err as Error).message }
   }
-}
-
-module.exports = {
-  init,
-  checkStatus,
-  listModels,
-  pullModel,
-  deleteModel,
-  MODEL_NAME_RE,
 }

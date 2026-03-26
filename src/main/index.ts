@@ -1,41 +1,45 @@
-const {
-  app,
-  BrowserWindow,
-  ipcMain,
-  Menu,
-  shell,
-  nativeTheme,
-} = require('electron')
-const { spawn, execSync } = require('node:child_process')
-const path = require('node:path')
-const http = require('node:http')
-const fs = require('node:fs')
-const ollamaService = require('./lib/ollama-service')
-const { cleanProgressLine } = require('./lib/progress-cleaner')
+import { app, BrowserWindow, ipcMain, Menu, shell, nativeTheme } from 'electron'
+import type { MenuItemConstructorOptions } from 'electron'
+import { spawn, execSync } from 'node:child_process'
+import path from 'node:path'
+import http from 'node:http'
+import fs from 'node:fs'
+import * as ollamaService from './lib/ollama-service'
+import { LINKS } from './config'
+import { cleanProgressLine } from './lib/progress-cleaner'
 
 const PROJECT_NAME = 'lonelynathan'
 
+function getAssetPath(...parts: string[]): string {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'assets', ...parts)
+    : path.join(__dirname, '../..', 'assets', ...parts)
+}
+
 const iconPath =
   process.platform === 'win32'
-    ? path.join(__dirname, 'assets/windows/icon.ico')
+    ? getAssetPath('windows', 'icon.ico')
     : process.platform === 'linux'
-      ? path.join(__dirname, 'assets/linux/icons/512x512.png')
-      : undefined // macOS: handled by the app bundle
+      ? getAssetPath('linux', 'icons', '512x512.png')
+      : undefined
+
 const PORT = 5678
 const POLL_INTERVAL = 2000
 const POLL_TIMEOUT = 180_000
 const ALLOWED_ORIGIN = `http://localhost:${PORT}`
 
-let loaderWindow = null
-let modelsWindow = null
-let aboutWindow = null
-let currentTheme = null
-let themeInterval = null
-let composeProcess = null
-let composePath = null
-let dataDir = null
+let loaderWindow: BrowserWindow | null = null
+let modelsWindow: BrowserWindow | null = null
+let aboutWindow: BrowserWindow | null = null
+let currentTheme: string | null = null
+let themeInterval: ReturnType<typeof setInterval> | null = null
+let composeProcess: ReturnType<typeof spawn> | null = null
+let composePath: string
+let dataDir: string
 
-const activePulls = new Map()
+const activePulls = new Map<string, AbortController>()
+
+const isDev = !app.isPackaged
 
 // ── Theme sync ──
 
@@ -62,11 +66,11 @@ const DETECT_THEME_JS = `(() => {
   return null
 })()`
 
-function themeFilePath() {
+function themeFilePath(): string {
   return path.join(app.getPath('userData'), '.n8n-theme')
 }
 
-function loadPersistedTheme() {
+function loadPersistedTheme(): string | null {
   try {
     const t = fs.readFileSync(themeFilePath(), 'utf8').trim()
     return t === 'dark' || t === 'light' ? t : null
@@ -75,7 +79,7 @@ function loadPersistedTheme() {
   }
 }
 
-function pushTheme(theme) {
+function pushTheme(theme: string): void {
   try {
     fs.writeFileSync(themeFilePath(), theme)
   } catch {}
@@ -84,11 +88,11 @@ function pushTheme(theme) {
   }
 }
 
-function startThemePolling(webContents) {
+function startThemePolling(webContents: Electron.WebContents): void {
   themeInterval = setInterval(async () => {
     try {
       if (webContents.isDestroyed()) {
-        clearInterval(themeInterval)
+        if (themeInterval) clearInterval(themeInterval)
         return
       }
       const theme = await webContents.executeJavaScript(DETECT_THEME_JS)
@@ -100,9 +104,42 @@ function startThemePolling(webContents) {
   }, 1000)
 }
 
+// ── IPC helpers ──
+
+function sendStatus(text: string): void {
+  if (isDev) console.log(`[status] ${text}`)
+  loaderWindow?.webContents.send('status-update', text)
+}
+
+function sendLog(text: string): void {
+  if (isDev) console.log(text.trimEnd())
+  const lines = text.split('\n')
+  for (const line of lines) {
+    const cleaned = cleanProgressLine(line.trimEnd())
+    if (cleaned) loaderWindow?.webContents.send('log-line', cleaned)
+  }
+}
+
+function sendError(text: string): void {
+  if (isDev) console.error(`[error] ${text}`)
+  loaderWindow?.webContents.send('error', text)
+}
+
+// ── Window path helpers ──
+
+function rendererFile(file: string): string {
+  return path.join(__dirname, '../renderer', file)
+}
+
+function rendererUrl(file: string, params?: Record<string, string>): string {
+  const base = `${process.env['ELECTRON_RENDERER_URL']}/${file}`
+  if (!params) return base
+  return `${base}?${new URLSearchParams(params)}`
+}
+
 // ── Loader window ──
 
-function createLoaderWindow() {
+function createLoaderWindow(): void {
   loaderWindow = new BrowserWindow({
     width: 900,
     height: 600,
@@ -113,45 +150,28 @@ function createLoaderWindow() {
     show: false,
     ...(iconPath && { icon: iconPath }),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
 
-  loaderWindow.loadFile('loader.html', { query: { version: app.getVersion() } })
+  const version = app.getVersion()
+  if (isDev && process.env['ELECTRON_RENDERER_URL']) {
+    loaderWindow.loadURL(rendererUrl('loader.html', { version }))
+  } else {
+    loaderWindow.loadFile(rendererFile('loader.html'), { query: { version } })
+  }
+
   loaderWindow.once('ready-to-show', () => {
-    loaderWindow.show()
+    loaderWindow!.show()
     startServices()
   })
 }
 
-// ── IPC helpers ──
-
-const isDev = !app.isPackaged
-
-function sendStatus(text) {
-  if (isDev) console.log(`[status] ${text}`)
-  loaderWindow?.webContents.send('status-update', text)
-}
-
-function sendLog(text) {
-  if (isDev) console.log(text.trimEnd())
-  const lines = text.split('\n')
-  for (const line of lines) {
-    const cleaned = cleanProgressLine(line.trimEnd())
-    if (cleaned) loaderWindow?.webContents.send('log-line', cleaned)
-  }
-}
-
-function sendError(text) {
-  if (isDev) console.error(`[error] ${text}`)
-  loaderWindow?.webContents.send('error', text)
-}
-
 // ── Docker / Compose helpers ──
 
-function dockerAvailable() {
+function dockerAvailable(): boolean {
   try {
     execSync('docker info', { stdio: 'ignore', timeout: 10_000 })
     return true
@@ -160,7 +180,7 @@ function dockerAvailable() {
   }
 }
 
-function composeArgs(subcommand, extra = []) {
+function composeArgs(subcommand: string, extra: string[] = []): string[] {
   return [
     'compose',
     '--file',
@@ -174,14 +194,14 @@ function composeArgs(subcommand, extra = []) {
   ]
 }
 
-function pullImages() {
+function pullImages(): Promise<void> {
   return new Promise((resolve) => {
     sendStatus('Pulling latest Docker images…')
 
     const proc = spawn('docker', composeArgs('pull'))
 
-    proc.stdout.on('data', (d) => sendLog(d.toString()))
-    proc.stderr.on('data', (d) => sendLog(d.toString()))
+    proc.stdout.on('data', (d: Buffer) => sendLog(d.toString()))
+    proc.stderr.on('data', (d: Buffer) => sendLog(d.toString()))
 
     proc.on('close', (code) => {
       if (code !== 0) {
@@ -199,7 +219,7 @@ function pullImages() {
   })
 }
 
-function startCompose() {
+function startCompose(): Promise<void> {
   return new Promise((resolve, reject) => {
     sendStatus('Starting services…')
 
@@ -207,7 +227,7 @@ function startCompose() {
 
     let started = false
 
-    composeProcess.stdout.on('data', (d) => {
+    composeProcess.stdout.on('data', (d: Buffer) => {
       sendLog(d.toString())
       if (!started) {
         started = true
@@ -215,7 +235,7 @@ function startCompose() {
       }
     })
 
-    composeProcess.stderr.on('data', (d) => {
+    composeProcess.stderr.on('data', (d: Buffer) => {
       sendLog(d.toString())
       if (!started) {
         started = true
@@ -238,7 +258,6 @@ function startCompose() {
       composeProcess = null
     })
 
-    // Resolve after 5s even if no output yet
     setTimeout(() => {
       if (!started) {
         started = true
@@ -248,7 +267,7 @@ function startCompose() {
   })
 }
 
-function waitForReady() {
+function waitForReady(): Promise<void> {
   sendStatus('Waiting for n8n to be ready…')
   const start = Date.now()
 
@@ -259,10 +278,9 @@ function waitForReady() {
       }
 
       const req = http.get(ALLOWED_ORIGIN, (res) => {
-        // 200 or any redirect means the web UI is up and serving
         if (
           res.statusCode === 200 ||
-          (res.statusCode >= 301 && res.statusCode <= 308)
+          (res.statusCode! >= 301 && res.statusCode! <= 308)
         ) {
           sendLog(`n8n is ready (HTTP ${res.statusCode})`)
           resolve()
@@ -283,7 +301,7 @@ function waitForReady() {
   })
 }
 
-function openApp() {
+function openApp(): void {
   sendStatus('Launching n8n…')
 
   const mainWindow = new BrowserWindow({
@@ -316,18 +334,18 @@ function openApp() {
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
-    clearInterval(themeInterval)
+    if (themeInterval) clearInterval(themeInterval)
     startThemePolling(mainWindow.webContents)
   })
 
   mainWindow.on('closed', () => {
-    clearInterval(themeInterval)
+    if (themeInterval) clearInterval(themeInterval)
     stopServices()
     app.quit()
   })
 }
 
-function stopServices() {
+function stopServices(): void {
   composeProcess = null
   try {
     execSync(`docker compose --project-name ${PROJECT_NAME} down`, {
@@ -341,7 +359,7 @@ function stopServices() {
 
 // ── Main flow ──
 
-function containerExec(service, cmd) {
+function containerExec(service: string, cmd: string[]): Promise<number> {
   return new Promise((resolve) => {
     const proc = spawn('docker', [
       'compose',
@@ -357,12 +375,12 @@ function containerExec(service, cmd) {
       ...cmd,
     ])
 
-    proc.stdout.on('data', (d) => sendLog(d.toString()))
-    proc.stderr.on('data', (d) => sendLog(d.toString()))
+    proc.stdout.on('data', (d: Buffer) => sendLog(d.toString()))
+    proc.stderr.on('data', (d: Buffer) => sendLog(d.toString()))
 
     proc.on('close', (code) => {
       sendLog(`[exec] exited ${code}`)
-      resolve(code)
+      resolve(code ?? -1)
     })
 
     proc.on('error', (err) => {
@@ -372,7 +390,7 @@ function containerExec(service, cmd) {
   })
 }
 
-async function setupOllamaCredential() {
+async function setupOllamaCredential(): Promise<void> {
   const markerFile = path.join(dataDir, '.ollama-credentials-imported')
   if (fs.existsSync(markerFile)) {
     sendLog('[setup] Ollama credentials already imported, skipping.')
@@ -383,7 +401,7 @@ async function setupOllamaCredential() {
 
   const credentialsSrc = app.isPackaged
     ? path.join(process.resourcesPath, 'ollama-credentials.json')
-    : path.join(__dirname, 'ollama-credentials.json')
+    : path.join(__dirname, '../../ollama-credentials.json')
 
   const credentialsDest = path.join(
     dataDir,
@@ -391,16 +409,14 @@ async function setupOllamaCredential() {
     'ollama-credentials.json'
   )
 
-  // Copy credentials file to the n8n-files volume (mounted at /files inside the container)
   try {
     fs.copyFileSync(credentialsSrc, credentialsDest)
     sendLog(`[setup] copied to ${credentialsDest}`)
   } catch (err) {
-    sendLog(`[setup] copy failed: ${err.message}`)
+    sendLog(`[setup] copy failed: ${(err as Error).message}`)
     return
   }
 
-  // Verify the file is visible inside the container
   sendLog('[setup] checking file inside container…')
   await containerExec('n8n', [
     'sh',
@@ -408,7 +424,6 @@ async function setupOllamaCredential() {
     'ls -la /files/ollama-credentials.json && cat /files/ollama-credentials.json',
   ])
 
-  // Import credentials — give n8n a moment to finish its own DB writes first
   await new Promise((r) => setTimeout(r, 3000))
   sendLog('[setup] importing credentials…')
   const exitCode = await containerExec('n8n', [
@@ -431,7 +446,7 @@ async function setupOllamaCredential() {
   }
 }
 
-async function waitForOllama() {
+async function waitForOllama(): Promise<void> {
   sendStatus('Waiting for Ollama to be ready…')
   const start = Date.now()
   const timeout = 60_000
@@ -445,7 +460,7 @@ async function waitForOllama() {
   throw new Error('Timed out waiting for Ollama')
 }
 
-async function pullOllamaModel(model) {
+async function pullOllamaModel(model: string): Promise<void> {
   sendStatus(`Checking for ${model} model…`)
 
   const checkCode = await containerExec('ollama', ['ollama', 'show', model])
@@ -466,7 +481,7 @@ async function pullOllamaModel(model) {
   }
 }
 
-async function startServices() {
+async function startServices(): Promise<void> {
   try {
     if (!dockerAvailable()) {
       sendError(
@@ -475,7 +490,6 @@ async function startServices() {
       return
     }
 
-    // Ensure data directories exist in userData
     for (const dir of ['n8n-data', 'n8n-files', 'n8n-custom', 'ollama-data']) {
       fs.mkdirSync(path.join(dataDir, dir), { recursive: true })
     }
@@ -490,14 +504,14 @@ async function startServices() {
     await pullOllamaModel('llama3.2:3b')
     openApp()
   } catch (err) {
-    sendLog(`Error: ${err.message}`)
-    sendError(`Failed to start: ${err.message}`)
+    sendLog(`Error: ${(err as Error).message}`)
+    sendError(`Failed to start: ${(err as Error).message}`)
   }
 }
 
 // ── About window ──
 
-function createAboutWindow() {
+function createAboutWindow(): void {
   if (aboutWindow && !aboutWindow.isDestroyed()) {
     aboutWindow.focus()
     return
@@ -513,7 +527,7 @@ function createAboutWindow() {
     title: 'About',
     ...(iconPath && { icon: iconPath }),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -524,17 +538,18 @@ function createAboutWindow() {
     aboutWindow = null
   })
   win.setMenu(null)
-  win.loadFile('about.html', {
-    query: {
-      version: app.getVersion(),
-      homepage: 'https://lonelynathan.app/',
-    },
-  })
+
+  const query = { version: app.getVersion(), homepage: LINKS.homepage }
+  if (isDev && process.env['ELECTRON_RENDERER_URL']) {
+    win.loadURL(rendererUrl('about.html', query))
+  } else {
+    win.loadFile(rendererFile('about.html'), { query })
+  }
 }
 
 // ── Models window ──
 
-function createModelsWindow() {
+function createModelsWindow(): void {
   if (modelsWindow && !modelsWindow.isDestroyed()) {
     modelsWindow.focus()
     return
@@ -549,14 +564,19 @@ function createModelsWindow() {
     title: 'Models',
     ...(iconPath && { icon: iconPath }),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
 
   modelsWindow.setMenu(null)
-  modelsWindow.loadFile('models.html')
+
+  if (isDev && process.env['ELECTRON_RENDERER_URL']) {
+    modelsWindow.loadURL(rendererUrl('models.html'))
+  } else {
+    modelsWindow.loadFile(rendererFile('models.html'))
+  }
 
   modelsWindow.on('closed', () => {
     for (const [, ac] of activePulls) ac.abort()
@@ -565,24 +585,19 @@ function createModelsWindow() {
   })
 }
 
-function buildMenu() {
-  const template = [
-    ...(process.platform === 'darwin' ? [{ role: 'appMenu' }] : []),
-    { role: 'fileMenu' },
-    { role: 'editMenu' },
-    { role: 'viewMenu' },
+function buildMenu(): void {
+  const template: MenuItemConstructorOptions[] = [
+    ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
+    { role: 'fileMenu' as const },
+    { role: 'editMenu' as const },
+    { role: 'viewMenu' as const },
     {
       label: 'Tools',
-      submenu: [
-        {
-          label: 'Models',
-          click: createModelsWindow,
-        },
-      ],
+      submenu: [{ label: 'Models', click: createModelsWindow }],
     },
-    { role: 'windowMenu' },
+    { role: 'windowMenu' as const },
     {
-      role: 'help',
+      role: 'help' as const,
       submenu: [{ label: 'About', click: createAboutWindow }],
     },
   ]
@@ -594,7 +609,7 @@ function buildMenu() {
 app.whenReady().then(() => {
   composePath = app.isPackaged
     ? path.join(process.resourcesPath, 'compose.yaml')
-    : path.join(__dirname, 'compose.yaml')
+    : path.join(__dirname, '../../compose.yaml')
 
   dataDir = app.getPath('userData')
 
@@ -623,7 +638,7 @@ ipcMain.on('quit-app', () => {
   app.quit()
 })
 
-ipcMain.on('open-external', (_event, url) => {
+ipcMain.on('open-external', (_event, url: string) => {
   shell.openExternal(url)
 })
 
@@ -635,7 +650,7 @@ ipcMain.handle('ollama:status', async () => ollamaService.checkStatus())
 
 ipcMain.handle('ollama:list', async () => ollamaService.listModels())
 
-ipcMain.handle('ollama:pull', async (event, name) => {
+ipcMain.handle('ollama:pull', async (event, name: string) => {
   if (!ollamaService.MODEL_NAME_RE.test(name))
     return { error: 'Invalid model name' }
 
@@ -654,7 +669,7 @@ ipcMain.handle('ollama:pull', async (event, name) => {
     event.sender.send('ollama:pull-done', {
       name,
       success: false,
-      error: err.message,
+      error: (err as Error).message,
     })
     return { success: false }
   } finally {
@@ -662,7 +677,7 @@ ipcMain.handle('ollama:pull', async (event, name) => {
   }
 })
 
-ipcMain.handle('ollama:cancel', async (_event, name) => {
+ipcMain.handle('ollama:cancel', async (_event, name: string) => {
   const ac = activePulls.get(name)
   if (ac) {
     ac.abort()
@@ -671,7 +686,7 @@ ipcMain.handle('ollama:cancel', async (_event, name) => {
   return { success: true }
 })
 
-ipcMain.handle('ollama:delete', async (_event, name) => {
+ipcMain.handle('ollama:delete', async (_event, name: string) => {
   if (!ollamaService.MODEL_NAME_RE.test(name))
     return { error: 'Invalid model name' }
   return ollamaService.deleteModel(name)

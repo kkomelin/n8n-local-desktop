@@ -7,7 +7,6 @@
       content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
 <title>LonelyNathan</title>
 <link rel="stylesheet" href="shared.css">
-<script src="shared.js"></script>
 <style>
   html, body { -webkit-app-region: drag; }
 
@@ -185,62 +184,6 @@
 
   </div>
 
-<script>
-  const version = new URLSearchParams(location.search).get('version');
-  if (version) document.getElementById('version').textContent = `v${version}`;
-
-  const statusEl  = document.getElementById('status-text');
-  const logLineEl = document.getElementById('log-line');
-  const loaderEl  = document.getElementById('loader');
-  const retryWrap = document.getElementById('retry-wrap');
-  const retryBtn  = document.getElementById('retry-btn');
-  const closeBtn  = document.getElementById('close-btn');
-
-  let cleanupStatus, cleanupLog, cleanupError;
-
-  function setStatus(text) {
-    statusEl.textContent = text;
-    statusEl.classList.remove('error');
-    loaderEl.classList.remove('error');
-    retryWrap.classList.remove('visible');
-  }
-
-  function showLog(text) {
-    logLineEl.textContent = text;
-  }
-
-  function setError(text) {
-    statusEl.textContent = text;
-    statusEl.classList.add('error');
-    loaderEl.classList.add('error');
-    retryWrap.classList.add('visible');
-  }
-
-  function bindListeners() {
-    if (!window.electronAPI) return;
-    cleanupStatus = window.electronAPI.onStatusUpdate(setStatus);
-    cleanupLog    = window.electronAPI.onLogLine(showLog);
-    cleanupError  = window.electronAPI.onError(setError);
-  }
-
-  function unbindListeners() {
-    cleanupStatus?.();
-    cleanupLog?.();
-    cleanupError?.();
-  }
-
-  bindListeners();
-
-  retryBtn.addEventListener('click', () => {
-    unbindListeners();
-    window.electronAPI?.retry();
-    setStatus('retrying…');
-    logLineEl.textContent = '';
-    retryWrap.classList.remove('visible');
-    bindListeners();
-  });
-
-  closeBtn.addEventListener('click', () => window.electronAPI?.quit());
-</script>
+  <script type="module" src="./loader.ts"></script>
 </body>
 </html>

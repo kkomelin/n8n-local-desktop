@@ -7,7 +7,6 @@
       content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
 <title>About</title>
 <link rel="stylesheet" href="shared.css">
-<script src="shared.js"></script>
 <style>
   .wrapper { padding: 32px 24px; gap: 0; }
 
@@ -109,34 +108,17 @@
         <span class="info-value"><a id="author-link" href="#">Konstantin Komelin</a></span>
       </div>
       <div class="info-row">
+        <span class="info-label">site</span>
+        <span class="info-value"><a id="website-link" href="#">LonelyNathan.app</a></span>
+      </div>
+      <div class="info-row">
         <span class="info-label">source</span>
-        <span class="info-value"><a id="homepage-link" href="#">github.com</a></span>
+        <span class="info-value"><a id="source-link" href="#">github.com</a></span>
       </div>
     </div>
 
   </div>
 
-<script>
-  const params = new URLSearchParams(location.search);
-
-  const version = params.get('version');
-  if (version) document.getElementById('version').textContent = `v${version}`;
-
-  const authorLink = document.getElementById('author-link');
-  authorLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.electronAPI?.openExternal('https://komelin.com?utm_source=lonelynathan');
-  });
-
-  const homepage = params.get('homepage');
-  if (homepage) {
-    const link = document.getElementById('homepage-link');
-    link.href = homepage;
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.electronAPI?.openExternal(homepage);
-    });
-  }
-</script>
+  <script type="module" src="./about.ts"></script>
 </body>
 </html>

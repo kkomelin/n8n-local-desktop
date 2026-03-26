@@ -18,6 +18,12 @@ Closing the window runs `docker compose down` and stops both services.
 pnpm install
 ```
 
+## Type Check
+
+```bash
+pnpm check
+```
+
 ## Run
 
 ```bash
@@ -50,7 +56,7 @@ pnpm build:mac      # dmg
 pnpm build:win      # nsis installer
 ```
 
-Output goes to the `dist/` folder.
+electron-vite compiles sources to `out/`, then electron-builder packages the final distributable to `dist/`.
 
 ## Release
 
