@@ -22,6 +22,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('theme-change', handler)
     return () => ipcRenderer.removeListener('theme-change', handler)
   },
+  onGpuPrompt: (cb: (gpu: string) => void) => {
+    const handler = (_e: Electron.IpcRendererEvent, gpu: string) => cb(gpu)
+    ipcRenderer.on('gpu:prompt', handler)
+    return () => ipcRenderer.removeListener('gpu:prompt', handler)
+  },
+  sendGpuChoice: (choice: string) => ipcRenderer.send('gpu:choice', choice),
   retry: () => ipcRenderer.send('retry'),
   quit: () => ipcRenderer.send('quit-app'),
   openExternal: (url: string) => ipcRenderer.send('open-external', url),

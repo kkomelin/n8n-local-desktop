@@ -35,6 +35,8 @@ interface ElectronAPI {
   onError: (cb: (text: string) => void) => () => void
   getTheme: () => Promise<string | null>
   onThemeChange: (cb: (theme: string) => void) => () => void
+  onGpuPrompt: (cb: (gpu: string) => void) => () => void
+  sendGpuChoice: (choice: string) => void
   retry: () => void
   quit: () => void
   openExternal: (url: string) => void

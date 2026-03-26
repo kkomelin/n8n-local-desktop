@@ -57,6 +57,18 @@
         "to": "compose.yaml"
       },
       {
+        "from": "compose.cpu.yaml",
+        "to": "compose.cpu.yaml"
+      },
+      {
+        "from": "compose.amd.yaml",
+        "to": "compose.amd.yaml"
+      },
+      {
+        "from": "compose.nvidia.yaml",
+        "to": "compose.nvidia.yaml"
+      },
+      {
         "from": "ollama-credentials.json",
         "to": "ollama-credentials.json"
       },
