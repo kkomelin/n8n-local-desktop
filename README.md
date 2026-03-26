@@ -9,6 +9,7 @@ LonelyNathan — Desktop app that runs <a href="https://n8n.io/">n8n</a> + <a hr
 <p align="center">
   <a href="https://github.com/kkomelin/n8n-ollama-desktop/releases"><img src="https://img.shields.io/github/v/release/kkomelin/n8n-ollama-desktop" alt="Release"></a>
   <a href="https://github.com/kkomelin/n8n-ollama-desktop/actions/workflows/build.yml"><img src="https://img.shields.io/badge/Build-Passing-brightgreen" alt="Build"></a>
+  <a href="https://github.com/kkomelin/n8n-ollama-desktop/actions/workflows/ci.yml"><img src="https://github.com/kkomelin/n8n-ollama-desktop/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-blue.svg" alt="License"></a>
 </p>
 
