@@ -11,6 +11,12 @@ const loaderEl = document.getElementById('loader') as HTMLElement
 const retryWrap = document.getElementById('retry-wrap') as HTMLElement
 const retryBtn = document.getElementById('retry-btn') as HTMLButtonElement
 const closeBtn = document.getElementById('close-btn') as HTMLButtonElement
+const progressArea = document.getElementById('progress-area') as HTMLElement
+const gpuPrompt = document.getElementById('gpu-prompt') as HTMLElement
+const gpuDetectedName = document.getElementById('gpu-detected-name') as HTMLElement
+const gpuOptHwLabel = document.getElementById('gpu-opt-hw-label') as HTMLElement
+const gpuOptHardware = document.getElementById('gpu-opt-hardware') as HTMLButtonElement
+const gpuOptCpu = document.getElementById('gpu-opt-cpu') as HTMLButtonElement
 
 let cleanupStatus: (() => void) | undefined
 let cleanupLog: (() => void) | undefined
@@ -48,6 +54,26 @@ function unbindListeners(): void {
 }
 
 bindListeners()
+
+let detectedGpu = ''
+
+window.electronAPI?.onGpuPrompt((gpu) => {
+  detectedGpu = gpu
+  const label = gpu === 'nvidia' ? 'NVIDIA GPU' : 'AMD GPU'
+  gpuDetectedName.textContent = label
+  gpuOptHwLabel.textContent = label
+  progressArea.style.display = 'none'
+  gpuPrompt.classList.add('visible')
+})
+
+function chooseGpu(choice: string): void {
+  gpuPrompt.classList.remove('visible')
+  progressArea.style.display = ''
+  window.electronAPI?.sendGpuChoice(choice)
+}
+
+gpuOptHardware.addEventListener('click', () => chooseGpu(detectedGpu))
+gpuOptCpu.addEventListener('click', () => chooseGpu('cpu'))
 
 retryBtn.addEventListener('click', () => {
   unbindListeners()

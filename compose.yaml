@@ -30,22 +30,11 @@ services:
       - n8n-network
 
   ollama:
-    image: ollama/ollama:latest
     restart: unless-stopped
-    # ports:
-    #   - "11434:11434"
     volumes:
       - ./ollama-data:/root/.ollama
     networks:
       - n8n-network
-    # Uncomment the following lines if you have an NVIDIA GPU:
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
 
 networks:
   n8n-network:

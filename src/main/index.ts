@@ -5,6 +5,12 @@ import path from 'node:path'
 import type { MenuItemConstructorOptions } from 'electron'
 import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell } from 'electron'
 import { DOCKER_PROJECT_NAME, LINKS } from './config'
+import {
+  type GpuType,
+  detectGpu,
+  loadGpuPreference,
+  saveGpuPreference,
+} from './lib/gpu'
 import * as ollamaService from './lib/ollama-service'
 import { cleanProgressLine } from './lib/progress-cleaner'
 
@@ -34,6 +40,7 @@ let themeInterval: ReturnType<typeof setInterval> | null = null
 let composeProcess: ReturnType<typeof spawn> | null = null
 let composePath: string
 let dataDir: string
+let gpuType: GpuType = 'cpu'
 
 const activePulls = new Map<string, AbortController>()
 
@@ -178,11 +185,17 @@ function dockerAvailable(): boolean {
   }
 }
 
+function composeOverridePath(): string {
+  return composePath.replace(/\.yaml$/, `.${gpuType}.yaml`)
+}
+
 function composeArgs(subcommand: string, extra: string[] = []): string[] {
   return [
     'compose',
     '--file',
     composePath,
+    '--file',
+    composeOverridePath(),
     '--project-name',
     DOCKER_PROJECT_NAME,
     '--project-directory',
@@ -355,6 +368,27 @@ function stopServices(): void {
   }
 }
 
+// ── GPU preference ──
+
+function resolveGpuPreference(): Promise<GpuType> {
+  const saved = loadGpuPreference()
+  if (saved) return Promise.resolve(saved)
+
+  const detected = detectGpu()
+  if (detected === 'cpu') {
+    saveGpuPreference('cpu')
+    return Promise.resolve('cpu')
+  }
+
+  return new Promise((resolve) => {
+    loaderWindow?.webContents.send('gpu:prompt', detected)
+    ipcMain.once('gpu:choice', (_e, choice: GpuType) => {
+      saveGpuPreference(choice)
+      resolve(choice)
+    })
+  })
+}
+
 // ── Main flow ──
 
 function containerExec(service: string, cmd: string[]): Promise<number> {
@@ -487,6 +521,9 @@ async function startServices(): Promise<void> {
       )
       return
     }
+
+    gpuType = await resolveGpuPreference()
+    sendLog(`[setup] GPU mode: ${gpuType}`)
 
     for (const dir of ['n8n-data', 'n8n-files', 'n8n-custom', 'ollama-data']) {
       fs.mkdirSync(path.join(dataDir, dir), { recursive: true })

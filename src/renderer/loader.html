@@ -144,6 +144,101 @@
     color: var(--text-primary);
   }
 
+  /* ── GPU prompt ── */
+  .gpu-prompt {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    padding: 8px 4px 4px;
+    animation: fadeSlideIn .25s ease-out both;
+  }
+  .gpu-prompt.visible { display: flex; }
+
+  .gpu-prompt-intro {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.5;
+  }
+  .gpu-prompt-intro strong { color: var(--text-primary); }
+
+  .gpu-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .gpu-option {
+    -webkit-app-region: no-drag;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 16px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s, background .15s, transform .1s;
+    font-family: inherit;
+    color: var(--text-primary);
+  }
+  .gpu-option:hover { background: var(--hover-subtle); border-color: var(--border-light); }
+  .gpu-option:active { transform: scale(.98); }
+
+  .gpu-option--gpu {
+    border-color: rgba(255,109,90,.35);
+    background: rgba(255,109,90,.04);
+  }
+  .gpu-option--gpu:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .gpu-option-icon { color: var(--text-dim); }
+  .gpu-option--gpu .gpu-option-icon { color: var(--accent); }
+
+  .gpu-option-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .gpu-rec-badge {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(255,109,90,.3);
+    border-radius: 3px;
+    padding: 1px 6px;
+    letter-spacing: .04em;
+    text-transform: lowercase;
+  }
+
+  .gpu-option-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+
+  .gpu-prompt-note {
+    font-size: 10.5px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .gpu-prompt-note code {
+    font-family: inherit;
+    background: var(--hover-subtle);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0 4px;
+  }
+
   /* ── Animations ── */
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -165,7 +260,7 @@
     <div class="version-badge" id="version">v—</div>
 
     <div class="card">
-      <div class="progress-area">
+      <div class="progress-area" id="progress-area">
         <div class="loader" id="loader">
           <svg viewBox="0 0 44 44" fill="none">
             <circle class="track" cx="22" cy="22" r="20" stroke-width="2.5" fill="none"/>
@@ -175,6 +270,49 @@
         </div>
         <div id="status-text">initializing…</div>
         <div id="log-line"></div>
+      </div>
+
+      <div class="gpu-prompt" id="gpu-prompt">
+        <div class="gpu-prompt-intro">
+          <strong id="gpu-detected-name">GPU</strong> detected &mdash; choose how to run AI inference
+        </div>
+        <div class="gpu-options">
+          <button class="gpu-option gpu-option--gpu" id="gpu-opt-hardware">
+            <div class="gpu-option-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <path d="M11 2L4 11h6l-1 7 7-9h-6l1-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="gpu-option-name">
+              <span id="gpu-opt-hw-label">GPU</span>
+              <span class="gpu-rec-badge">recommended</span>
+            </div>
+            <div class="gpu-option-desc">Significantly faster inference. Models respond quicker, especially larger ones. Requires working GPU drivers.</div>
+          </button>
+          <button class="gpu-option" id="gpu-opt-cpu">
+            <div class="gpu-option-icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                <rect x="4" y="4" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                <rect x="7" y="7" width="6" height="6" rx=".5" stroke="currentColor" stroke-width="1"/>
+                <line x1="7" y1="1.5" x2="7" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="10" y1="1.5" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="13" y1="1.5" x2="13" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="16" x2="7" y2="18.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="10" y1="16" x2="10" y2="18.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="13" y1="16" x2="13" y2="18.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="1.5" y1="7" x2="4" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="1.5" y1="10" x2="4" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="1.5" y1="13" x2="4" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="16" y1="7" x2="18.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="16" y1="10" x2="18.5" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="16" y1="13" x2="18.5" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="gpu-option-name">CPU only</div>
+            <div class="gpu-option-desc">Compatible with any machine. Slower inference but no GPU driver dependency. Good fallback if you hit issues.</div>
+          </button>
+        </div>
+        <div class="gpu-prompt-note">This choice is saved permanently. To reset it, delete <code>.gpu-preference</code> from your app data folder.</div>
       </div>
 
       <div class="retry-wrap" id="retry-wrap">
