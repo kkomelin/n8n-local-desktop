@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-LonelyNathan: Desktop app that runs <a href="https://n8n.io/">n8n</a> + <a href="https://ollama.com/">Ollama</a> locally via Docker.
+LonelyNathan app lets you build local AI workflows with <a href="https://n8n.io/">n8n</a> and <a href="https://ollama.com/">Ollama</a>. Powered by Docker.
 </p>
 
 <p align="center">
