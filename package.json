@@ -74,6 +74,10 @@
         "to": "ollama-credentials.json"
       },
       {
+        "from": "demo-workflow.json",
+        "to": "demo-workflow.json"
+      },
+      {
         "from": "assets/linux/icons/512x512.png",
         "to": "assets/linux/icons/512x512.png"
       },

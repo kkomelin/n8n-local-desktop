@@ -1,0 +1,93 @@
+{
+  "name": "Grammar Correction",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9704285c-cf86-433e-a1c4-5496840a223f",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [272, 304],
+      "webhookId": "bb978569-3f96-4e7a-adc4-d018c26f8293"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You're a grammar corrector. You take user phrase, correct it and respond with the corrected version only. No additional requests."
+        }
+      },
+      "id": "ae2365ea-f608-4c39-b981-84e897bbca8f",
+      "name": "Grammar Corrector",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [480, 304],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:3b",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "628741fa-204c-4873-b9be-ed1c33e4381a",
+      "name": "Ollama Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [480, 512],
+      "credentials": {
+        "ollamaApi": {
+          "id": "n8n-desktop-ollama-01",
+          "name": "Ollama Local"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Grammar Corrector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Grammar Corrector",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "2f44e305-e4e2-471f-9a9f-8d3dbf5cb1d9",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "instanceId": "7f3123ed4c766197e227170e4692b082cf2151a93ed51afe44ae98328a96cbb6"
+  },
+  "id": "7GXUKNdjBrZsC9hU",
+  "tags": [
+    {
+      "name": "LonelyNathan",
+      "id": "QYQJIEz5put5eYqB",
+      "updatedAt": "2026-04-15T14:16:24.188Z",
+      "createdAt": "2026-04-15T14:16:24.188Z"
+    }
+  ]
+}

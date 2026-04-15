@@ -431,6 +431,43 @@ function containerExec(service: string, cmd: string[]): Promise<number> {
   })
 }
 
+// Like containerExec but captures stdout instead of streaming it to the log.
+function containerExecCapture(
+  service: string,
+  cmd: string[]
+): Promise<{ exitCode: number; stdout: string }> {
+  return new Promise((resolve) => {
+    const proc = spawn('docker', [
+      'compose',
+      '--file',
+      composePath,
+      '--project-name',
+      DOCKER_PROJECT_NAME,
+      '--project-directory',
+      dataDir,
+      'exec',
+      '-T',
+      service,
+      ...cmd,
+    ])
+
+    let stdout = ''
+    proc.stdout.on('data', (d: Buffer) => {
+      stdout += d.toString()
+    })
+    proc.stderr.on('data', (d: Buffer) => sendLog(d.toString()))
+
+    proc.on('close', (code) => {
+      resolve({ exitCode: code ?? -1, stdout })
+    })
+
+    proc.on('error', (err) => {
+      sendLog(`[exec] error: ${err.message}`)
+      resolve({ exitCode: -1, stdout })
+    })
+  })
+}
+
 async function setupOllamaCredential(): Promise<void> {
   const markerFile = path.join(dataDir, '.ollama-credentials-imported')
   if (fs.existsSync(markerFile)) {
@@ -483,6 +520,86 @@ async function setupOllamaCredential(): Promise<void> {
   } else {
     sendLog(
       `[setup] WARNING: credential import exited with code ${exitCode} — Ollama connection may not be configured.`
+    )
+  }
+}
+
+async function setupDemoWorkflow(): Promise<void> {
+  const markerFile = path.join(dataDir, '.demo-workflow-imported')
+  if (fs.existsSync(markerFile)) {
+    sendLog('[setup] Demo workflow already handled, skipping.')
+    return
+  }
+
+  sendLog('[setup] Checking for existing workflows…')
+
+  // Merge stderr into stdout so n8n log lines don't mask the JSON output.
+  // n8n may also exit non-zero when there are 0 workflows, so we don't gate
+  // on the exit code - instead we extract the JSON array from the raw output.
+  const { stdout } = await containerExecCapture('n8n', [
+    'sh',
+    '-c',
+    'n8n export:workflow --all 2>&1',
+  ])
+
+  // When there are no workflows, n8n exits 1 and prints a plain-text message
+  // rather than an empty JSON array. Detect that case explicitly.
+  const noWorkflowsMsg = 'No workflows found with specified filters'
+  if (stdout.includes(noWorkflowsMsg)) {
+    // Confirmed empty - fall through to import below.
+  } else {
+    // n8n emits log lines alongside the JSON array - find the array explicitly.
+    const match = stdout.match(/\[[\s\S]*\]/)
+    if (!match) {
+      sendLog('[setup] Could not check existing workflows, skipping demo import.')
+      return
+    }
+    try {
+      const data = JSON.parse(match[0])
+      if (Array.isArray(data) && data.length > 0) {
+        sendLog('[setup] Workflows already present, skipping demo import.')
+        fs.writeFileSync(markerFile, new Date().toISOString())
+        return
+      }
+      // Parsed as empty array - fall through to import below.
+    } catch {
+      // Malformed JSON - assume workflows exist (safe default).
+      sendLog('[setup] Could not parse workflow list, skipping demo import.')
+      return
+    }
+  }
+
+  sendLog('[setup] No workflows found, importing demo workflow…')
+
+  const workflowSrc = app.isPackaged
+    ? path.join(process.resourcesPath, 'demo-workflow.json')
+    : path.join(__dirname, '../../demo-workflow.json')
+
+  const workflowDest = path.join(dataDir, 'n8n-files', 'demo-workflow.json')
+
+  try {
+    fs.copyFileSync(workflowSrc, workflowDest)
+  } catch (err) {
+    sendLog(`[setup] Failed to copy demo workflow: ${(err as Error).message}`)
+    return
+  }
+
+  const importCode = await containerExec('n8n', [
+    'n8n',
+    'import:workflow',
+    '--input=/files/demo-workflow.json',
+  ])
+
+  try {
+    fs.unlinkSync(workflowDest)
+  } catch {}
+
+  if (importCode === 0) {
+    fs.writeFileSync(markerFile, new Date().toISOString())
+    sendLog('[setup] Demo workflow imported successfully.')
+  } else {
+    sendLog(
+      `[setup] WARNING: demo workflow import exited with code ${importCode}.`
     )
   }
 }
@@ -546,7 +663,7 @@ async function startServices(): Promise<void> {
 
     await startCompose()
     await Promise.all([
-      waitForReady().then(setupOllamaCredential),
+      waitForReady().then(setupOllamaCredential).then(setupDemoWorkflow),
       waitForOllama().then(() => pullOllamaModel('llama3.2:3b')),
     ])
     openApp()
