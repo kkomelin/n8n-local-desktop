@@ -34,6 +34,7 @@ LonelyNathan: Desktop app that runs <a href="https://n8n.io/">n8n</a> + <a href=
 - **Use your own models** - pull any model from Ollama's library or connect to LM Studio, llama.cpp, or a host Ollama instance
 - **Full community edition** - runs the official n8n Docker image with no integrations removed or disabled
 - **Telemetry off by default** - n8n diagnostics and version notifications are disabled to match the local-first nature of this setup; see [docs/telemetry.md](docs/telemetry.md) to re-enable them
+- **Demo workflow included** - a working Grammar Correction workflow is pre-loaded on first launch so you can explore n8n immediately
 
 ## AI Models
 
@@ -56,6 +57,7 @@ See [docs/host-llm-servers.md](docs/host-llm-servers.md) for setup instructions.
 - [x] Make it possible to install new models via the app menu (Tools > Models)
 - [x] Auto-detect GPU and use it for Ollama inference when available
 - [x] Add update notifications with a link to the latest release
+- [x] Include a demo workflow to help new users get started quickly
 - [ ] [YOUR IDEA](https://github.com/kkomelin/n8n-ollama-desktop/issues/new)
 
 ---
